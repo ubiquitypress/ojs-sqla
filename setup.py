@@ -7,7 +7,7 @@ def readme():
         return f.read()
 
 kwargs = {
-	'name': 'ojs-sqla',
+	'name': 'ojssqla',
 	'version': '0.0.1',
 	'description': "Comfortable clothing for PKPs OJS",
 	'keywords': 'Ubiquity Press PKP OJS',
@@ -15,7 +15,7 @@ kwargs = {
 	'author_email': 'andy.byers@ubiquitypress.com',
 	'url': 'https://github.com/ubiquitypress/ojs-sqla',
 	'license': 'GPL 2',
-	'packages': ['ojs-sqla'],
+	'packages': ['ojssqla'],
 	
 	# setuptools/pip args
 	
