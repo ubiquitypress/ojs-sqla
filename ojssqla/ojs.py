@@ -764,27 +764,16 @@ class Gift(Base):
     gift_note = Column(Text)
     notes = Column(Text)
 
-
-t_group_memberships = Table(
-    'group_memberships', metadata,
-    Column('user_id', BigInteger, nullable=False),
-    Column('group_id', BigInteger, nullable=False),
-    Column('about_displayed', Integer, nullable=False, server_default=u"'1'"),
-    Column('seq', Float(asdecimal=True), nullable=False, server_default=u"'0'"),
-    Index('group_memberships_pkey', 'user_id', 'group_id')
-)
-
-
-t_group_settings = Table(
-    'group_settings', metadata,
-    Column('group_id', BigInteger, nullable=False, index=True),
-    Column('locale', String(5), nullable=False, server_default=u"''"),
-    Column('setting_name', String(255), nullable=False),
-    Column('setting_value', Text),
-    Column('setting_type', String(6), nullable=False),
-    Index('group_settings_pkey', 'group_id', 'locale', 'setting_name')
-)
-
+class GroupSettings(Base):
+    __tablename__ = 'group_settings'
+    __table_args__ = (
+        Index('group_settings_pkey', 'group_id', 'locale', 'setting_name'),
+    )
+    group_id = Column(BigInteger, nullable=False, index=True, primary_key=True)
+    locale = Column(String(5), nullable=False, server_default=u"''", primary_key=True)
+    setting_name = Column(String(255), nullable=False, primary_key=True)
+    setting_value = Column(Text)
+    setting_type = Column(String(6), nullable=False)
 
 class Group(Base):
     __tablename__ = 'groups'
@@ -1281,15 +1270,17 @@ t_section_editors = Table(
 )
 
 
-t_section_settings = Table(
-    'section_settings', metadata,
-    Column('section_id', BigInteger, nullable=False, index=True),
-    Column('locale', String(5), nullable=False, server_default=u"''"),
-    Column('setting_name', String(255), nullable=False),
-    Column('setting_value', Text),
-    Column('setting_type', String(6), nullable=False),
-    Index('section_settings_pkey', 'section_id', 'locale', 'setting_name')
-)
+class SectionSettings(Base):
+    __tablename__  = 'section_settings'
+    __table_args__ = (
+        Index('section_settings_pkey', 'section_id', 'locale', 'setting_name'),
+    )
+
+    section_id = Column(ForeignKey('sections.section_id', deferrable=True, initially=u'DEFERRED'), nullable=False, index=True, primary_key=True)
+    locale = Column('locale', String(5), nullable=False, server_default=u"''", primary_key=True)
+    setting_name = Column('setting_name', String(255), nullable=False, primary_key=True)
+    setting_value = Column('setting_value', Text)
+    setting_type = Column('setting_type', String(6), nullable=False)
 
 
 class Section(Base):
@@ -1308,6 +1299,8 @@ class Section(Base):
     hide_about = Column(Integer, nullable=False, server_default=u"'0'")
     disable_comments = Column(Integer, nullable=False, server_default=u"'0'")
     abstract_word_count = Column(BigInteger)
+
+    settings = relationship(u'SectionSettings', primaryjoin='Section.section_id == SectionSettings.section_id')
 
 
 t_sessions = Table(
@@ -1539,6 +1532,19 @@ class User(Base):
     suffix = Column(String(40))
     billing_address = Column(String(255))
     inline_help = Column(Integer)
+
+class GroupMemberships(Base):
+    __tablename__ = 'group_memberships'
+    __table_args__ = (
+        Index('group_memberships_pkey', 'user_id', 'group_id'),
+    )
+    user_id = Column(ForeignKey('users.user_id', deferrable=True, initially=u'DEFERRED'), nullable=False, primary_key=True)
+    group_id = Column(BigInteger, nullable=False, primary_key=True)
+    about_displayed = Column(Integer, nullable=False, server_default=u"'1'")
+    seq = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
+
+    user = relationship(u'User', primaryjoin='GroupMemberships.user_id == User.user_id')
+
 
 
 t_versions = Table(
