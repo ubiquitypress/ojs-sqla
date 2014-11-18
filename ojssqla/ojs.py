@@ -133,20 +133,6 @@ t_article_galley_settings = Table(
 )
 
 
-class ArticleGalley(Base):
-    __tablename__ = 'article_galleys'
-
-    galley_id = Column(BigInteger, primary_key=True)
-    locale = Column(String(5))
-    article_id = Column(BigInteger, nullable=False, index=True)
-    file_id = Column(BigInteger, nullable=False)
-    label = Column(String(32))
-    html_galley = Column(Integer, nullable=False, server_default=u"'0'")
-    style_file_id = Column(BigInteger)
-    seq = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
-    remote_url = Column(String(255))
-
-
 t_article_html_galley_images = Table(
     'article_html_galley_images', metadata,
     Column('galley_id', BigInteger, nullable=False),
@@ -191,16 +177,6 @@ class ArticleSearchObject(Base):
     article_id = Column(BigInteger, nullable=False)
     type = Column(Integer, nullable=False)
     assoc_id = Column(BigInteger)
-
-class ArticleSetting(Base):
-    __tablename__ = 'article_settings'
-
-    article_id = Column(BigInteger, nullable=False, primary_key=True)
-    locale = Column(String(5), nullable=False, server_default=u"''", primary_key=True)
-    setting_name = Column(String(255), nullable=False, primary_key=True)
-    setting_value = Column(Text)
-    setting_type = Column(String(6), nullable=False)
-
 
 t_article_supp_file_settings = Table(
     'article_supp_file_settings', metadata,
@@ -269,19 +245,86 @@ class Article(Base):
     published_article = relationship(
         "PublishedArticle",
         uselist=False,
-        backref="article")
-        #primaryjoin='Article.article_id==PublishedArticle.article_id', # not necessary it seems
-        #foreign_keys='PublishedArticle.article_id')                    # not necessary it seems
+        backref="article",
+        lazy='joined')
+
+    settings = relationship(
+        "ArticleSetting",
+        backref="Article",
+        lazy='joined')
+
+    authors = relationship(
+        "Author",
+        backref="Article",
+        lazy='joined')
+
+    galleys = relationship(
+        "ArticleGalley",
+        backref="Article",
+        lazy='joined',
+        order_by="ArticleGalley.seq")
+
+
+class Issue(Base):
+    __tablename__ = 'issues'
+
+    issue_id = Column(BigInteger, primary_key=True)
+    journal_id = Column(BigInteger, nullable=False, index=True)
+    volume = Column(SmallInteger)
+    number = Column(String(10))
+    year = Column(SmallInteger)
+    published = Column(Integer, nullable=False, server_default=u"'0'")
+    current = Column(Integer, nullable=False, server_default=u"'0'")
+    date_published = Column(DateTime)
+    date_notified = Column(DateTime)
+    access_status = Column(Integer, nullable=False, server_default=u"'1'")
+    open_access_date = Column(DateTime)
+    show_volume = Column(Integer, nullable=False, server_default=u"'0'")
+    show_number = Column(Integer, nullable=False, server_default=u"'0'")
+    show_year = Column(Integer, nullable=False, server_default=u"'0'")
+    show_title = Column(Integer, nullable=False, server_default=u"'0'")
+    style_file_name = Column(String(90))
+    original_style_file_name = Column(String(255))
+    last_modified = Column(DateTime)
+
 
 class PublishedArticle(Base):
     __tablename__ = 'published_articles'
 
     published_article_id = Column(BigInteger, primary_key=True)
     article_id = Column(BigInteger, ForeignKey(Article.article_id), nullable=False, unique=True) # lying to SQLAlchemy. no fkey exists.
-    issue_id = Column(BigInteger, nullable=False, index=True)
+    issue_id = Column(BigInteger, ForeignKey(Issue.issue_id), nullable=False, index=True)
     date_published = Column(DateTime)
     seq = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
     access_status = Column(Integer, nullable=False, server_default=u"'0'")
+
+    issue = relationship(
+        "Issue",
+        uselist=False,
+        backref="Issue",
+        lazy='joined')
+
+class ArticleSetting(Base):
+    __tablename__ = 'article_settings'
+
+    article_id = Column(BigInteger, ForeignKey(Article.article_id), nullable=False, primary_key=True)
+    locale = Column(String(5), nullable=False, server_default=u"''", primary_key=True)
+    setting_name = Column(String(255), nullable=False, primary_key=True)
+    setting_value = Column(Text)
+    setting_type = Column(String(6), nullable=False)
+
+class ArticleGalley(Base):
+    __tablename__ = 'article_galleys'
+
+    galley_id = Column(BigInteger, primary_key=True)
+    locale = Column(String(5))
+    article_id = Column(BigInteger, ForeignKey(Article.article_id), nullable=False, index=True)
+    file_id = Column(BigInteger, nullable=False)
+    label = Column(String(32))
+    html_galley = Column(Integer, nullable=False, server_default=u"'0'")
+    style_file_id = Column(BigInteger)
+    seq = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
+    remote_url = Column(String(255))
         
 class AuthSource(Base):
     __tablename__ = 'auth_sources'
@@ -308,7 +351,7 @@ class Author(Base):
     __tablename__ = 'authors'
 
     author_id = Column(BigInteger, primary_key=True)
-    submission_id = Column(BigInteger, nullable=False, index=True)
+    submission_id = Column(BigInteger, ForeignKey(Article.article_id), nullable=False, index=True)
     primary_contact = Column(Integer, nullable=False, server_default=u"'0'")
     seq = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
     first_name = Column(String(40), nullable=False)
@@ -856,29 +899,6 @@ t_issue_settings = Table(
     Index('issue_settings_pkey', 'issue_id', 'locale', 'setting_name'),
     Index('issue_settings_name_value', 'setting_name', 'setting_value')
 )
-
-
-class Issue(Base):
-    __tablename__ = 'issues'
-
-    issue_id = Column(BigInteger, primary_key=True)
-    journal_id = Column(BigInteger, nullable=False, index=True)
-    volume = Column(SmallInteger)
-    number = Column(String(10))
-    year = Column(SmallInteger)
-    published = Column(Integer, nullable=False, server_default=u"'0'")
-    current = Column(Integer, nullable=False, server_default=u"'0'")
-    date_published = Column(DateTime)
-    date_notified = Column(DateTime)
-    access_status = Column(Integer, nullable=False, server_default=u"'1'")
-    open_access_date = Column(DateTime)
-    show_volume = Column(Integer, nullable=False, server_default=u"'0'")
-    show_number = Column(Integer, nullable=False, server_default=u"'0'")
-    show_year = Column(Integer, nullable=False, server_default=u"'0'")
-    show_title = Column(Integer, nullable=False, server_default=u"'0'")
-    style_file_name = Column(String(90))
-    original_style_file_name = Column(String(255))
-    last_modified = Column(DateTime)
 
 
 class JournalSetting(Base):

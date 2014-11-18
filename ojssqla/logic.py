@@ -31,6 +31,14 @@ def as_dict(obj):
 def all_as_dict(obj_list):
 		return [as_dict(obj) for obj in obj_list]
 
+def dict_ojs_settings_results(settings_results):
+	results_dict = {}
+
+	for row in settings_results:
+		results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = row.setting_value
+
+	return results_dict
+
 def deltadate(days, start_date=None):
 	rdate = (start_date or date.today()) - timedelta(days)
 	return rdate.strftime('%Y-%m-%d')
@@ -53,21 +61,6 @@ def editorial_team(session):
 
 	return group_dict
 
-def get_policy_scope(session):
-	return session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'focusScopeDesc').one()
-
-def get_policy_review(session):
-	return session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'reviewPolicy').one()
-
-def get_policy_pubfreq(session):
-	return session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'pubFreqPolicy').one()
-
-def get_policy_oapolicy(session):
-	return session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'openAccessPolicy').one()
-
-def get_policy_lockss(session):
-	return session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'lockssLicense').one()
-
 def get_additional_policies(session):
 	serial = session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'customAboutItems').one()
 	return loads(serial[0], array_hook=collections.OrderedDict)
@@ -81,6 +74,46 @@ def get_section_policies(session):
 		section_dict[s.setting_value] = {'restricted' : section['editor_restricted'], 'indexed': section['meta_indexed'], 'reviews': section['meta_reviewed'] }
 
 	return section_dict
+
+def get_journal_setting(session, setting_name):
+	return session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == setting_name).one()
+
+def get_submission_checklist(session):
+	checklist = session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'submissionChecklist').one()
+	return loads(checklist[0], array_hook=collections.OrderedDict)
+
+def get_article_list(session):
+	return session.query(ojs.Article).join(ojs.PublishedArticle).order_by(ojs.PublishedArticle.date_published.desc())
+
+def get_article(session, doi):
+	return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.ArticleSetting.setting_name == 'pub-id::doi', ojs.ArticleSetting.setting_value == doi).one()
+
+def get_all_article_settings(session, article_id):
+	return session.query(ojs.ArticleSetting).filter(ojs.ArticleSetting.article_id == article_id)
+
+def get_article_settings(session, article_id, setting_name):
+	return session.query(ojs.ArticleSetting).filter(ojs.ArticleSetting.article_id == article_id, ojs.ArticleSetting.setting_name == setting_name).one()
+
+def get_latest_articles(session, limit):
+	return session.query(ojs.Article).join(ojs.PublishedArticle).order_by(ojs.PublishedArticle.date_published.desc()).limit(limit)
+
+def get_popular_articles(session, limit):
+	return session.query(ojs.Article).join(ojs.PublishedArticle).order_by(ojs.PublishedArticle.date_published.desc()).limit(limit)
+
+def get_section_setting(session, setting_name, section_id):
+	return session.query(ojs.SectionSettings).filter(ojs.SectionSettings.section_id == section_id, ojs.SectionSettings.setting_name == setting_name).one()
+
+def get_article_galley(session, galley_id):
+	return session.query(ojs.ArticleGalley).filter(ojs.ArticleGalley.galley_id == galley_id).one()
+
+def get_first_html_galley(session, article_id):
+	return session.query(ojs.ArticleGalley).filter(ojs.ArticleGalley.article_id == article_id, ojs.ArticleGalley.html_galley == 1).order_by(ojs.ArticleGalley.seq).first()
+
+def get_article_file(session, file_id):
+	return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.file_id == file_id).one()
+
+def get_article_figure(session, article_id, orig_filename):
+	return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.article_id == article_id, ojs.ArticleFile.original_file_name == orig_filename).order_by(desc(ojs.ArticleFile.revision)).one()
 
 
 
