@@ -57,7 +57,7 @@ def editorial_team(session):
 
 	for g in groups:
 		members = session.query(ojs.GroupMemberships).filter(ojs.GroupMemberships.group_id == g.group_id)
-		group_dict[g.setting_value] = [{'first_name': m.user.first_name, 'last_name': m.user.first_name, 'email': m.user.email, 'url': m.user.url,  'affiliation': get_user_affiliation(session, m.user.user_id), 'bio': get_user_bio(session, m.user.user_id)} for m in members]
+		group_dict[g.setting_value] = [{'first_name': m.user.first_name, 'last_name': m.user.last_name, 'email': m.user.email, 'url': m.user.url,  'affiliation': get_user_affiliation(session, m.user.user_id), 'bio': get_user_bio(session, m.user.user_id)} for m in members]
 
 	return group_dict
 
@@ -127,5 +127,5 @@ def get_article_sections(session):
 	return session.query(ojs.Section)
 
 def get_section_settings(session, section_id):
-	return session.query(ojs.SectionSettings).filter(ojs.SectionSettings.section_id == section_id, ojs.SectionSettings.setting_name == setting_name).one()
+	return session.query(ojs.SectionSettings).filter(ojs.SectionSettings.section_id == section_id)
 
