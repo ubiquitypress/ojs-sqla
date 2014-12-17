@@ -84,14 +84,27 @@ def get_section_policies(session):
 	return section_dict
 
 def get_journal_setting(session, setting_name):
-	return session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == setting_name).one()
+	try:
+		return session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == setting_name).one()
+	except NoResultFound:
+		return None
 
 def get_submission_checklist(session):
 	checklist = session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'submissionChecklist').one()
 	return loads(checklist[0], array_hook=collections.OrderedDict)
 
-def get_article_list(session):
-	return session.query(ojs.Article).join(ojs.PublishedArticle).order_by(ojs.PublishedArticle.date_published.desc())
+def get_article_list(session, filter_checks=None, order_by=None):
+	order_list = []
+
+	if order_by == 'page_number':
+		order_list.append(desc(ojs.Article.pages))
+	else:
+		order_list.append(desc(ojs.PublishedArticle.date_published))
+
+	if not filter_checks:
+		return session.query(ojs.Article).join(ojs.PublishedArticle).order_by(*order_list)
+	else:
+		return session.query(ojs.Article).join(ojs.PublishedArticle).filter(ojs.Article.section_id.in_(filter_checks)).order_by(*order_list)
 
 def get_article(session, doi):
 	return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.ArticleSetting.setting_name == 'pub-id::doi', ojs.ArticleSetting.setting_value == doi).one()
@@ -124,8 +137,14 @@ def get_article_figure(session, article_id, orig_filename):
 	return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.article_id == article_id, ojs.ArticleFile.original_file_name == orig_filename).order_by(desc(ojs.ArticleFile.revision)).one()
 
 def get_article_sections(session):
-	return session.query(ojs.Section)
+	return session.query(ojs.Section).order_by(ojs.Section.seq)
 
 def get_section_settings(session, section_id):
 	return session.query(ojs.SectionSettings).filter(ojs.SectionSettings.section_id == section_id)
+
+def get_issues(session):
+	return session.query(ojs.Issue).order_by(desc(ojs.Issue.number), desc(ojs.Issue.volume))
+
+def get_issue_settings(session, issue_id):
+	return session.query(ojs.IssueSettings).filter(ojs.IssueSettings.issue_id == issue_id)
 
