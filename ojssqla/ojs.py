@@ -1507,18 +1507,17 @@ t_user_interests = Table(
     Index('u_e_pkey', 'user_id', 'controlled_vocab_entry_id')
 )
 
+class UserSetting(Base):
+    __tablename__ = 'user_settings'
 
-t_user_settings = Table(
-    'user_settings', metadata,
-    Column('user_id', BigInteger, nullable=False, index=True),
-    Column('locale', String(5), nullable=False, server_default=u"''"),
-    Column('setting_name', String(255), nullable=False),
-    Column('assoc_type', BigInteger, server_default=u"'0'"),
-    Column('assoc_id', BigInteger, server_default=u"'0'"),
-    Column('setting_value', Text),
-    Column('setting_type', String(6), nullable=False),
+    user_id = Column(BigInteger, nullable=False, index=True, primary_key=True)
+    locale = Column(String(5), nullable=False, primary_key=True)
+    setting_name = Column(String(255), nullable=False, primary_key=True)
+    assoc_type = Column(BigInteger, primary_key=True)
+    assoc_id = Column(BigInteger, primary_key=True)
+    setting_value = Column(Text)
+    setting_type = Column(String(6), nullable=False)
     Index('user_settings_pkey', 'user_id', 'locale', 'setting_name', 'assoc_type', 'assoc_id')
-)
 
 
 class User(Base):

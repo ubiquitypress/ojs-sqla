@@ -57,9 +57,13 @@ def editorial_team(session):
 
 	for g in groups:
 		members = session.query(ojs.GroupMemberships).filter(ojs.GroupMemberships.group_id == g.group_id)
-		group_dict[g.setting_value] = ['%s %s' % (m.user.first_name, m.user.last_name) for m in members]
+		group_dict[g.setting_value] = [{'first_name': m.user.first_name, 'last_name': m.user.first_name, 'email': m.user.email, 'url': m.user.url,  'affiliation': get_user_affiliation(session, m.user.user_id)} for m in members]
 
 	return group_dict
+
+def get_user_affiliation(session, user_id):
+	user_affiliation = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'affiliation').one())
+	return user_affiliation.get('setting_value', None)
 
 def get_additional_policies(session):
 	serial = session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'customAboutItems').one()
@@ -115,7 +119,9 @@ def get_article_file(session, file_id):
 def get_article_figure(session, article_id, orig_filename):
 	return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.article_id == article_id, ojs.ArticleFile.original_file_name == orig_filename).order_by(desc(ojs.ArticleFile.revision)).one()
 
+def get_article_sections(session):
+	return session.query(ojs.Section)
 
-
-
+def get_section_settings(session, section_id):
+	return session.query(ojs.SectionSettings).filter(ojs.SectionSettings.section_id == section_id, ojs.SectionSettings.setting_name == setting_name).one()
 
