@@ -145,6 +145,12 @@ def get_section_settings(session, section_id):
 def get_issues(session):
 	return session.query(ojs.Issue).order_by(desc(ojs.Issue.number), desc(ojs.Issue.volume))
 
+def get_issue(session, volume_id):
+	try:
+		return session.query(ojs.Issue).filter(ojs.Issue.volume == volume_id).one()
+	except NoResultFound:
+		return None
+
 def get_issue_settings(session, issue_id):
 	return session.query(ojs.IssueSettings).filter(ojs.IssueSettings.issue_id == issue_id)
 
