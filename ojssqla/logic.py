@@ -154,3 +154,6 @@ def get_issue(session, volume_id):
 def get_issue_settings(session, issue_id):
 	return session.query(ojs.IssueSettings).filter(ojs.IssueSettings.issue_id == issue_id)
 
+def get_issue_articles(session, volume_id):
+	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.Issue.volume == volume_id).order_by(ojs.PublishedArticle.seq)
+
