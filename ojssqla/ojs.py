@@ -463,18 +463,20 @@ class Collection(Base):
     tba = Column(BIT(1))
     disabled = Column(BIT(1))
 
+    users = relationship(u'CollectionUser', primaryjoin='Collection.id == CollectionUser.collection_id')
+    articles = relationship(u'CollectionArticle', primaryjoin='Collection.id == CollectionArticle.collection_id')
 
 class CollectionArticle(Base):
     __tablename__ = 'collection_article'
 
-    collection_id = Column(BigInteger, primary_key=True, nullable=False)
+    collection_id = Column(ForeignKey('collection.id', deferrable=True, initially=u'DEFERRED'), primary_key=True, nullable=False)
     published_article_id = Column(BigInteger, primary_key=True, nullable=False)
 
 
 class CollectionUser(Base):
     __tablename__ = 'collection_user'
 
-    collection_id = Column(BigInteger, primary_key=True, nullable=False)
+    collection_id = Column(ForeignKey('collection.id', deferrable=True, initially=u'DEFERRED'), primary_key=True, nullable=False)
     user_id = Column(BigInteger, primary_key=True, nullable=False)
     role_name = Column(String(50), nullable=False, server_default=u"'editor'")
 

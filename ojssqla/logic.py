@@ -157,3 +157,28 @@ def get_issue_settings(session, issue_id):
 def get_issue_articles(session, volume_id):
 	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.Issue.volume == volume_id).order_by(ojs.PublishedArticle.seq)
 
+def get_collections(session):
+	return session.query(ojs.Collection).filter(ojs.Collection.disabled == None)
+
+def get_collection(session, col_abbrev):
+	try:
+		return session.query(ojs.Collection).filter(ojs.Collection.abbrev == col_abbrev).one()
+	except NoResultFound:
+		return None
+
+def get_collection_users(session, col_abbrev):
+	try:
+		return session.query(ojs.Collection).options(joinedload(ojs.Collection.articles)).options(joinedload(ojs.Collection.users)).filter(ojs.Collection.abbrev == col_abbrev).one()
+	except NoResultFound:
+		return None
+
+def get_collection_user_name(session, user_id):
+	try:
+		return session.query(ojs.User).filter(ojs.User.user_id == user_id).one()
+	except NoResultFound:
+		pass
+
+def get_collection_articles(session, collection_articles):
+	article_ids = [article.get('published_article_id') for article in collection_articles]
+	return session.query(ojs.Article).join(ojs.PublishedArticle).filter(ojs.Article.article_id.in_(article_ids)).order_by(ojs.Article.article_id)
+
