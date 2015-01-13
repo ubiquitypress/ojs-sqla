@@ -22,17 +22,17 @@ class AccessKey(Base):
     assoc_id = Column(BigInteger)
     expiry_date = Column(DateTime, nullable=False)
 
+class AnnouncementSettings(Base):
+    __tablename__ = 'announcement_settings'
+    __table_args__ = (
+        Index('announcement_settings_pkey', 'announcement_id', 'locale', 'setting_name'),
+    )
 
-t_announcement_settings = Table(
-    'announcement_settings', metadata,
-    Column('announcement_id', BigInteger, nullable=False, index=True),
-    Column('locale', String(5), nullable=False, server_default=u"''"),
-    Column('setting_name', String(255), nullable=False),
-    Column('setting_value', Text),
-    Column('setting_type', String(6), nullable=False),
-    Index('announcement_settings_pkey', 'announcement_id', 'locale', 'setting_name')
-)
-
+    announcement_id = Column(BigInteger, nullable=False, primary_key=True)
+    locale = Column(String(5), nullable=False, server_default=u"''", primary_key=True)
+    setting_name = Column(String(255), nullable=False, primary_key=True)
+    setting_value = Column(Text)
+    setting_type = Column(String(6), nullable=False)
 
 t_announcement_type_settings = Table(
     'announcement_type_settings', metadata,

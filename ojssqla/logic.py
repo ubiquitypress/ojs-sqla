@@ -182,3 +182,21 @@ def get_collection_articles(session, collection_articles):
 	article_ids = [article.get('published_article_id') for article in collection_articles]
 	return session.query(ojs.Article).join(ojs.PublishedArticle).filter(ojs.Article.article_id.in_(article_ids)).order_by(ojs.Article.article_id)
 
+def get_latest_announcement(session):
+	try:
+		return session.query(ojs.Announcement).filter(or_(ojs.Announcement.date_expire >= date.today(), ojs.Announcement.date_expire == None)).order_by(ojs.Announcement.date_posted).first()
+	except NoResultFound:
+		return None
+
+def get_announcements(session):
+	return session.query(ojs.Announcement).filter(or_(ojs.Announcement.date_expire >= date.today(), ojs.Announcement.date_expire == None)).order_by(desc(ojs.Announcement.date_posted))
+
+def get_announcement(session, announcement_id):
+	try:
+		return session.query(ojs.Announcement).filter(ojs.Announcement.announcement_id == announcement_id).one()
+	except NoResultFound:
+		return None
+		
+def get_announcement_settings(session, announcement_id):
+	return session.query(ojs.AnnouncementSettings).filter(ojs.AnnouncementSettings.announcement_id == announcement_id)
+
