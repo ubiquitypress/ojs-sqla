@@ -200,3 +200,30 @@ def get_announcement(session, announcement_id):
 def get_announcement_settings(session, announcement_id):
 	return session.query(ojs.AnnouncementSettings).filter(ojs.AnnouncementSettings.announcement_id == announcement_id)
 
+def transfer_user(session, ojs_user_dict, ojs_user_settings_dict):
+	new_obj = ojs.User(**ojs_user_dict)
+	session.add(new_obj)
+	session.flush()
+
+	for k,v in ojs_user_settings_dict.iteritems():
+		kwargs = {
+				'user_id': new_obj.user_id,
+				'setting_name': k,
+				'setting_value': v,
+				'locale': 'en_US',
+				'setting_type': 'string', # only for introduced settings, so fairly safe but only if we do validation on our end
+				'assoc_type': 0,
+		}
+		new_setting = ojs.UserSetting(**kwargs)
+		session.add(new_setting)
+		session.flush()
+
+	session.commit()
+	return new_obj.user_id
+
+def get_user_by_email(session, email):
+	try:
+		return session.query(ojs.User).filter(ojs.User.email == email).one()
+	except NoResultFound:
+		return None
+
