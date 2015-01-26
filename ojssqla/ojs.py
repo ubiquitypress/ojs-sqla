@@ -1321,18 +1321,20 @@ class Section(Base):
 
     settings = relationship(u'SectionSettings', primaryjoin='Section.section_id == SectionSettings.section_id')
 
+class Sessions(Base):
+    __tablename__ = 'sessions'
+    __table_args__ = (
+        Index('session_id', 'user_id'),
+    )
 
-t_sessions = Table(
-    'sessions', metadata,
-    Column('session_id', String(40), nullable=False, unique=True),
-    Column('user_id', BigInteger, index=True),
-    Column('ip_address', String(39), nullable=False),
-    Column('user_agent', String(255)),
-    Column('created', BigInteger, nullable=False, server_default=u"'0'"),
-    Column('last_used', BigInteger, nullable=False, server_default=u"'0'"),
-    Column('remember', Integer, nullable=False, server_default=u"'0'"),
-    Column('data', Text)
-)
+    session_id = Column(String(40), nullable=False, unique=True, primary_key=True)
+    user_id = Column(BigInteger, index=True, primary_key=True)
+    ip_address = Column(String(39), nullable=False)
+    user_agent = Column(String(255))
+    created = Column(BigInteger, nullable=False, server_default=u"'0'")
+    last_used = Column(BigInteger, nullable=False, server_default=u"'0'")
+    remember = Column(Integer, nullable=False, server_default=u"'0'")
+    data = Column(Text)
 
 
 class Signoff(Base):

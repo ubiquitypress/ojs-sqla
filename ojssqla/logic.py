@@ -227,3 +227,44 @@ def get_user_by_email(session, email):
 	except NoResultFound:
 		return None
 
+def get_login_user(session, username, password):
+	try:
+		return session.query(ojs.User).filter(ojs.User.username == username, ojs.User.password == password).one()
+	except NoResultFound:
+		return None
+
+def get_session_from_sessionid(session, ojs_session_id):
+	try:
+		return session.query(ojs.Sessions).filter(ojs.Sessions.session_id == ojs_session_id).one()
+	except NoResultFound:
+		return None
+
+def get_user_from_sessionid(session, ojs_session_id):
+	user_session = get_session_from_sessionid(session, ojs_session_id)
+
+	if user_session:
+		try:
+			return session.query(ojs.User).filter(ojs.User.user_id == user_session.user_id).one()
+		except NoResultFound:
+			return None
+	else:
+		return None
+
+def add_session_to_db(db_session, session_id, user, serialised_data, ip, user_agent, time_stamp):
+	kwargs = {
+		'session_id': session_id,
+		'user_id': user.get('user_id'),
+		'ip_address': ip,
+		'user_agent': user_agent,
+		'created': time_stamp,
+		'last_used': time_stamp,
+		'remember': 0,
+		'data': serialised_data,
+	}
+
+	new_session = ojs.Sessions(**kwargs)
+	db_session.add(new_session)
+	db_session.commit()
+
+
+
