@@ -93,7 +93,7 @@ def get_submission_checklist(session):
 	checklist = session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'submissionChecklist').one()
 	return loads(checklist[0], array_hook=collections.OrderedDict)
 
-def get_article_list(session, filter_checks=None, order_by=None):
+def get_article_list(session, filter_checks=None, order_by=None, articles_per_page=25, offset=0):
 	order_list = []
 
 	if order_by == 'page_number':
@@ -102,9 +102,12 @@ def get_article_list(session, filter_checks=None, order_by=None):
 		order_list.append(desc(ojs.PublishedArticle.date_published))
 
 	if not filter_checks:
-		return session.query(ojs.Article).join(ojs.PublishedArticle).order_by(*order_list)
+		return session.query(ojs.Article).join(ojs.PublishedArticle).order_by(*order_list).offset(offset).limit(articles_per_page)
 	else:
-		return session.query(ojs.Article).join(ojs.PublishedArticle).filter(ojs.Article.section_id.in_(filter_checks)).order_by(*order_list)
+		return session.query(ojs.Article).join(ojs.PublishedArticle).filter(ojs.Article.section_id.in_(filter_checks)).order_by(*order_list).limit(articles_per_page)
+
+def get_article_count(session):
+	return session.query(func.count(ojs.PublishedArticle.article_id)).one()
 
 def get_article(session, doi):
 	return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.ArticleSetting.setting_name == 'pub-id::doi', ojs.ArticleSetting.setting_value == doi).one()
@@ -266,5 +269,7 @@ def add_session_to_db(db_session, session_id, user, serialised_data, ip, user_ag
 	db_session.add(new_session)
 	db_session.commit()
 
+def get_user_settings(session, user_id):
+	return session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id)
 
 
