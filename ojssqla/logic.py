@@ -272,4 +272,5 @@ def add_session_to_db(db_session, session_id, user, serialised_data, ip, user_ag
 def get_user_settings(session, user_id):
 	return session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id)
 
-
+def get_author_settings(session, author_id):
+	return session.query(ojs.AuthorSetting).filter(ojs.AuthorSetting.author_id == author_id)

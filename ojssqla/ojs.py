@@ -336,16 +336,14 @@ class AuthSource(Base):
     settings = Column(Text)
 
 
-t_author_settings = Table(
-    'author_settings', metadata,
-    Column('author_id', BigInteger, nullable=False, index=True),
-    Column('locale', String(5), nullable=False, server_default=u"''"),
-    Column('setting_name', String(255), nullable=False),
-    Column('setting_value', Text),
-    Column('setting_type', String(6), nullable=False),
-    Index('author_settings_pkey', 'author_id', 'locale', 'setting_name')
-)
+class AuthorSetting(Base):
+    __tablename__ = 'author_settings'
 
+    author_id = Column(BigInteger, nullable=False, index=True, primary_key=True)
+    locale = Column(String(5), nullable=False, server_default=u"''", primary_key=True)
+    setting_name = Column(String(255), nullable=False, primary_key=True)
+    setting_value = Column(Text)
+    setting_type = Column(String(6), nullable=False)
 
 class Author(Base):
     __tablename__ = 'authors'
