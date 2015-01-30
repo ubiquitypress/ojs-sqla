@@ -110,8 +110,11 @@ def get_article_count(session):
 	return session.query(func.count(ojs.PublishedArticle.article_id)).one()
 
 def get_article(session, doi):
-	return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.ArticleSetting.setting_name == 'pub-id::doi', ojs.ArticleSetting.setting_value == doi).one()
-
+	try:
+		return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.ArticleSetting.setting_name == 'pub-id::doi', ojs.ArticleSetting.setting_value == doi).one()
+	except NoResultFound:
+		return None
+		
 def get_all_article_settings(session, article_id):
 	return session.query(ojs.ArticleSetting).filter(ojs.ArticleSetting.article_id == article_id)
 
