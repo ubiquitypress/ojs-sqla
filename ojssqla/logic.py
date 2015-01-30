@@ -114,7 +114,7 @@ def get_article(session, doi):
 		return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.ArticleSetting.setting_name == 'pub-id::doi', ojs.ArticleSetting.setting_value == doi).one()
 	except NoResultFound:
 		return None
-		
+
 def get_all_article_settings(session, article_id):
 	return session.query(ojs.ArticleSetting).filter(ojs.ArticleSetting.article_id == article_id)
 
@@ -277,3 +277,10 @@ def get_user_settings(session, user_id):
 
 def get_author_settings(session, author_id):
 	return session.query(ojs.AuthorSetting).filter(ojs.AuthorSetting.author_id == author_id)
+
+def get_orcid(session, orcid):
+	try:
+		return session.query(ojs.UserSetting).filter(ojs.UserSetting.setting_name == 'orcid', ojs.UserSetting.setting_value == orcid).one()
+	except NoResultFound:
+		return None
+
