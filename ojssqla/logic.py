@@ -299,5 +299,11 @@ def get_orcid(session, orcid):
 		except NoResultFound:
 			return None
 	except MultipleResultsFound:
-		return True
+		return session.query(ojs.UserSetting).filter(ojs.UserSetting.setting_name == 'orcid', ojs.UserSetting.setting_value == orcid).first()
+
+def get_user_from_id(session, user_id):
+	try:
+		return session.query(ojs.User).filter(ojs.User.user_id == user_id).one()
+	except NoResultFound:
+		return None
 
