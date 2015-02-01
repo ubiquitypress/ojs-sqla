@@ -3,7 +3,7 @@ import collections
 
 from sqlalchemy.orm import joinedload,subqueryload, contains_eager
 from sqlalchemy import desc, asc, func, and_, or_
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from datetime import date, timedelta
 from phpserialize import *
@@ -227,6 +227,20 @@ def transfer_user(session, ojs_user_dict, ojs_user_settings_dict):
 	session.commit()
 	return new_obj.user_id
 
+def insert_roles(session, user_id, roles):
+	for role in roles:
+		kwargs = {
+			'journal_id': 1,
+			'user_id': user_id,
+			'role_id': role,
+		}
+		new_role = ojs.Roles(**kwargs)
+		session.add(new_role)
+		session.flush()
+
+	session.commit()
+	return True
+
 def get_user_by_email(session, email):
 	try:
 		return session.query(ojs.User).filter(ojs.User.email == email).one()
@@ -280,7 +294,10 @@ def get_author_settings(session, author_id):
 
 def get_orcid(session, orcid):
 	try:
-		return session.query(ojs.UserSetting).filter(ojs.UserSetting.setting_name == 'orcid', ojs.UserSetting.setting_value == orcid).one()
-	except NoResultFound:
-		return None
+		try:
+			return session.query(ojs.UserSetting).filter(ojs.UserSetting.setting_name == 'orcid', ojs.UserSetting.setting_value == orcid).one()
+		except NoResultFound:
+			return None
+	except MultipleResultsFound:
+		return True
 

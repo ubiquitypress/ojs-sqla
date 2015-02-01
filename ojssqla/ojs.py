@@ -1221,13 +1221,12 @@ class ReviewRound(Base):
     stage_id = Column(BigInteger)
 
 
-t_roles = Table(
-    'roles', metadata,
-    Column('journal_id', BigInteger, nullable=False, index=True),
-    Column('user_id', BigInteger, nullable=False, index=True),
-    Column('role_id', BigInteger, nullable=False, index=True),
-    Index('roles_pkey', 'journal_id', 'user_id', 'role_id')
-)
+class Roles(Base):
+    __tablename__ = 'roles'
+
+    journal_id = Column(BigInteger, nullable=False, index=True, primary_key=True)
+    user_id = Column(BigInteger, nullable=False, index=True, primary_key=True)
+    role_id = Column(BigInteger, nullable=False, index=True, primary_key=True)
 
 
 class RtContext(Base):
