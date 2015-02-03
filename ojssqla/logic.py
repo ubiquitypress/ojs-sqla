@@ -62,8 +62,11 @@ def editorial_team(session):
 	return group_dict
 
 def get_user_affiliation(session, user_id):
-	user_affiliation = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'affiliation').one())
-	return user_affiliation.get('setting_value', None)
+	try:
+		user_affiliation = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'affiliation').one())
+		return user_affiliation.get('setting_value', None)
+	except NoResultFound:
+		return None
 
 def get_user_bio(session, user_id):
 	user_bio = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'biography').one())
