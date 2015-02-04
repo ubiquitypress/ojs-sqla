@@ -236,6 +236,90 @@ def transfer_user(session, ojs_user_dict, ojs_user_settings_dict):
 	session.commit()
 	return new_obj.user_id
 
+def article_transfer_stage_one(session, article_one, article_settings):
+	'''
+	Creates the initial article, gets the id and creates its settings values
+	'''
+
+	new_article = ojs.Article(**article_one)
+	session.add(new_article)
+	session.flush()
+
+	for k,v in article_settings.iteritems():
+		kwargs = {
+			'article_id': new_article.article_id,
+			'locale': 'en_US',
+			'setting_name': k,
+			'setting_value': v,
+			'setting_type': 'seting',
+		}
+		new_article_setting = ojs.ArticleSetting(**kwargs)
+		session.add(new_article_setting)
+		session.flush
+
+	session.commit()
+	return new_article.article_id
+
+def file_transfer(session, _dict, file_id, file_type, file_extension):
+	'''
+	Creates file records in OJS associated with an article
+	'''
+	new_file = ojs.ArticleFile(**_dict)
+	session.add(new_file)
+	session.commit()
+
+	if file_type == 'manuscript':
+		file_abbrev = 'SM'
+	elif file_type == 'figure':
+		file_abbrev = 'SP'
+	elif file_type == 'review':
+		file_abbrev = 'RV'
+	elif file_type == 'data':
+		file_abbrev = 'SP'
+
+	new_file.file_name = '%s-%s-%s-%s%s' % (new_file.article_id, new_file.file_id, '1', file_abbrev, file_extension)
+	session.commit()
+
+	return {
+		'file_id': file_id,
+		'file_type': file_type,
+		'ojs_file_id': new_file.file_id,
+		'file_name': new_file.file_name,
+	}
+
+def create_supp_record(session, _dict):
+	new_supp = ojs.ArticleSupplementaryFile(**_dict)
+	session.add(new_supp)
+	session.commit()
+
+def insert_article_author(session, article_author, article_author_settings):
+	new_author = ojs.Author(**article_author)
+	session.add(new_author)
+	session.commit()
+
+	for k,v in article_author_settings.iteritems():
+		kwargs = {
+			'author_id': new_author.author_id,
+			'locale': 'en_US',
+			'setting_name': k,
+			'setting_value': v,
+			'setting_type': 'string',
+		}
+		new_author_setting = ojs.AuthorSetting(**kwargs)
+		session.add(new_author_setting)
+
+	session.commit()
+
+def update_article_manuscript(session, ojs_article_id, file_id):
+	article = session.query(ojs.Article).filter(ojs.Article.article_id == ojs_article_id).one()
+	article.submission_file_id = file_id
+	session.commit()
+
+def update_article_revision(session, ojs_article_id, file_id):
+	article = session.query(ojs.Article).filter(ojs.Article.article_id == ojs_article_id).one()
+	article.review_file_id = file_id
+	session.commit()
+
 def insert_roles(session, user_id, roles):
 	for role in roles:
 		kwargs = {
