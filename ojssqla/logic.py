@@ -208,7 +208,7 @@ def get_collection_articles(session, collection_articles):
 
 def get_latest_announcement(session):
 	try:
-		return session.query(ojs.Announcement).filter(or_(ojs.Announcement.date_expire >= date.today(), ojs.Announcement.date_expire == None)).order_by(ojs.Announcement.date_posted).first()
+		return session.query(ojs.Announcement).filter(or_(ojs.Announcement.date_expire >= date.today(), ojs.Announcement.date_expire == None)).order_by(desc(ojs.Announcement.date_posted)).first()
 	except NoResultFound:
 		return None
 
