@@ -124,6 +124,12 @@ def get_article(session, doi):
 	except NoResultFound:
 		return None
 
+def get_article_by_id(session, article_id):
+	try:
+		return session.query(ojs.Article).filter(ojs.Article.article_id == article_id).one()
+	except NoResultFound:
+		return None
+
 def get_all_article_settings(session, article_id):
 	return session.query(ojs.ArticleSetting).filter(ojs.ArticleSetting.article_id == article_id)
 
@@ -140,7 +146,10 @@ def get_section_setting(session, setting_name, section_id):
 	return session.query(ojs.SectionSettings).filter(ojs.SectionSettings.section_id == section_id, ojs.SectionSettings.setting_name == setting_name).one()
 
 def get_article_galley(session, galley_id):
-	return session.query(ojs.ArticleGalley).filter(ojs.ArticleGalley.galley_id == galley_id).one()
+	try:
+		return session.query(ojs.ArticleGalley).filter(ojs.ArticleGalley.galley_id == galley_id).one()
+	except NoResultFound:
+		return None
 
 def get_first_html_galley(session, article_id):
 	return session.query(ojs.ArticleGalley).filter(ojs.ArticleGalley.article_id == article_id, ojs.ArticleGalley.html_galley == 1).order_by(ojs.ArticleGalley.seq).first()
