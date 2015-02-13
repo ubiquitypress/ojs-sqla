@@ -167,11 +167,11 @@ def get_section_settings(session, section_id):
 	return session.query(ojs.SectionSettings).filter(ojs.SectionSettings.section_id == section_id)
 
 def get_issues(session):
-	return session.query(ojs.Issue).order_by(desc(ojs.Issue.number), desc(ojs.Issue.volume))
+	return session.query(ojs.Issue).filter(ojs.Issue.date_published != None).order_by(desc(ojs.Issue.number), desc(ojs.Issue.volume))
 
-def get_issue(session, volume_id):
+def get_issue(session, volume_id, issue_id):
 	try:
-		return session.query(ojs.Issue).filter(ojs.Issue.volume == volume_id).one()
+		return session.query(ojs.Issue).filter(ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id).one()
 	except NoResultFound:
 		return None
 
