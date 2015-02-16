@@ -113,7 +113,7 @@ def get_article_list(session, filter_checks=None, order_by=None, articles_per_pa
 	if not filter_checks:
 		return session.query(ojs.Article).join(ojs.PublishedArticle).order_by(*order_list).offset(offset).limit(articles_per_page)
 	else:
-		return session.query(ojs.Article).join(ojs.PublishedArticle).filter(ojs.Article.section_id.in_(filter_checks)).order_by(*order_list).limit(articles_per_page)
+		return session.query(ojs.Article).join(ojs.PublishedArticle).filter(ojs.Article.section_id.in_(filter_checks)).order_by(*order_list).offset(offset).limit(articles_per_page)
 
 def get_article_count(session):
 	return session.query(func.count(ojs.PublishedArticle.article_id)).one()
