@@ -124,6 +124,12 @@ def get_article(session, doi):
 	except NoResultFound:
 		return None
 
+def get_article_by_id(session, doi):
+	try:
+		return session.query(ojs.Article).filter(ojs.Article.article_id == doi).one()
+	except NoResultFound:
+		return None
+
 def get_article_by_id(session, article_id):
 	try:
 		return session.query(ojs.Article).filter(ojs.Article.article_id == article_id).one()
