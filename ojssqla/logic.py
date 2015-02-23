@@ -415,3 +415,5 @@ def get_user_from_id(session, user_id):
 	except NoResultFound:
 		return None
 
+def get_footer_settings(session):
+	return session.query(ojs.JournalSetting).filter(or_(ojs.JournalSetting.setting_name == 'publisherInstitution', ojs.JournalSetting.setting_name == 'publisherUrl',  ojs.JournalSetting.setting_name == 'onlineIssn'), ojs.JournalSetting.journal_id == 1)
