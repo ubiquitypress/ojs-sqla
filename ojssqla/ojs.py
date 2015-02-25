@@ -2,7 +2,8 @@
 from sqlalchemy import BigInteger, Column, Date, DateTime, Float, Index, Integer, SmallInteger, String, Table, Text, ForeignKey
 from sqlalchemy.dialects.mysql.base import BIT
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship, backref, column_property
+
 
 
 Base = declarative_base()
@@ -360,6 +361,8 @@ class Author(Base):
     url = Column(String(255))
     user_group_id = Column(BigInteger)
     suffix = Column(String(40))
+
+    fullname = column_property(first_name + ' ' + last_name)
 
 
 class BooksForReview(Base):

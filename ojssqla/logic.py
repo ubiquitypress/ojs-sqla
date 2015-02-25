@@ -98,6 +98,9 @@ def get_journal_setting(session, setting_name):
 	except NoResultFound:
 		return None
 
+def ojs_journal_settings(session):
+	return session.query(ojs.JournalSetting)
+
 def get_submission_checklist(session):
 	checklist = session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'submissionChecklist').one()
 	return loads(checklist[0], array_hook=collections.OrderedDict)
@@ -173,7 +176,7 @@ def get_section_settings(session, section_id):
 	return session.query(ojs.SectionSettings).filter(ojs.SectionSettings.section_id == section_id)
 
 def get_issues(session):
-	return session.query(ojs.Issue).filter(ojs.Issue.date_published != None).order_by(desc(ojs.Issue.number), desc(ojs.Issue.volume))
+	return session.query(ojs.Issue).filter(ojs.Issue.date_published != None).order_by(desc(ojs.Issue.volume), desc(ojs.Issue.number))
 
 def get_issue(session, volume_id, issue_id):
 	try:
@@ -394,6 +397,9 @@ def add_session_to_db(db_session, session_id, user, serialised_data, ip, user_ag
 	db_session.add(new_session)
 	db_session.commit()
 
+def basic_search(session, search_term):
+	return session.query(ojs.Article).join(ojs.ArticleSetting).join(ojs.PublishedArticle).filter(or_(and_(ojs.ArticleSetting.setting_name == 'title', ojs.ArticleSetting.setting_value.match(search_term)), and_(ojs.ArticleSetting.setting_name == 'abstract', ojs.ArticleSetting.setting_value.match(search_term)) ) )
+
 def get_user_settings(session, user_id):
 	return session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id)
 
@@ -416,4 +422,4 @@ def get_user_from_id(session, user_id):
 		return None
 
 def get_footer_settings(session):
-	return session.query(ojs.JournalSetting).filter(or_(ojs.JournalSetting.setting_name == 'publisherInstitution', ojs.JournalSetting.setting_name == 'publisherUrl',  ojs.JournalSetting.setting_name == 'onlineIssn'), ojs.JournalSetting.journal_id == 1)
+	return session.query(ojs.JournalSetting).filter(or_(ojs.JournalSetting.setting_name == 'publisherInstitution', ojs.JournalSetting.setting_name == 'publisherUrl',  ojs.JournalSetting.setting_name == 'onlineIssn',  ojs.JournalSetting.setting_name == 'printIssn'), ojs.JournalSetting.journal_id == 1)
