@@ -423,3 +423,9 @@ def get_user_from_id(session, user_id):
 
 def get_footer_settings(session):
 	return session.query(ojs.JournalSetting).filter(or_(ojs.JournalSetting.setting_name == 'publisherInstitution', ojs.JournalSetting.setting_name == 'publisherUrl',  ojs.JournalSetting.setting_name == 'onlineIssn',  ojs.JournalSetting.setting_name == 'printIssn'), ojs.JournalSetting.journal_id == 1)
+
+def get_current_issue(session):
+	try:
+		return session.query(ojs.Issue).filter(ojs.Issue.current == 1).one()
+	except NoResultFound:
+		return None
