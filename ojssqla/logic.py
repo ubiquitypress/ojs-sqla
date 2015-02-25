@@ -187,8 +187,8 @@ def get_issue(session, volume_id, issue_id):
 def get_issue_settings(session, issue_id):
 	return session.query(ojs.IssueSettings).filter(ojs.IssueSettings.issue_id == issue_id)
 
-def get_issue_articles(session, volume_id):
-	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.Issue.volume == volume_id).order_by(ojs.PublishedArticle.seq)
+def get_issue_articles(session, volume_id, issue_id):
+	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id).order_by(ojs.PublishedArticle.seq)
 
 def get_collections(session):
 	return session.query(ojs.Collection).filter(ojs.Collection.disabled == None)
