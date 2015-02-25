@@ -53,7 +53,7 @@ def contact_settings(session, settings_to_get):
 
 def editorial_team(session):
 	group_dict = collections.OrderedDict()
-	groups = session.query(ojs.GroupSettings)
+	groups = session.query(ojs.GroupSettings).join(ojs.Group, ojs.GroupSettings.group_id == ojs.Group.group_id).order_by(ojs.Group.seq)
 
 	for g in groups:
 		members = session.query(ojs.GroupMemberships).filter(ojs.GroupMemberships.group_id == g.group_id)
