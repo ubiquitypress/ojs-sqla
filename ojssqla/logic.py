@@ -102,8 +102,11 @@ def ojs_journal_settings(session):
 	return session.query(ojs.JournalSetting)
 
 def get_submission_checklist(session):
-	checklist = session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'submissionChecklist').one()
-	return loads(checklist[0], array_hook=collections.OrderedDict)
+	try:
+		checklist = session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'submissionChecklist').one()
+		return loads(checklist[0], array_hook=collections.OrderedDict)
+	except NoResultFound:
+		return None
 
 def get_article_list(session, filter_checks=None, order_by=None, articles_per_page=25, offset=0):
 	order_list = []
