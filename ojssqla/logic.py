@@ -57,7 +57,7 @@ def editorial_team(session):
 
 	for g in groups:
 		members = session.query(ojs.GroupMemberships).filter(ojs.GroupMemberships.group_id == g.group_id)
-		group_dict[g.setting_value] = [{'first_name': m.user.first_name, 'last_name': m.user.last_name, 'email': m.user.email, 'url': m.user.url,  'affiliation': get_user_affiliation(session, m.user.user_id), 'bio': get_user_bio(session, m.user.user_id)} for m in members]
+		group_dict[g.setting_value] = [{'first_name': m.user.first_name, 'last_name': m.user.last_name, 'email': m.user.email, 'url': m.user.url,  'affiliation': get_user_affiliation(session, m.user.user_id), 'bio': get_user_bio(session, m.user.user_id), 'country': m.user.country} for m in members]
 
 	return group_dict
 
@@ -191,7 +191,7 @@ def get_issue_settings(session, issue_id):
 	return session.query(ojs.IssueSettings).filter(ojs.IssueSettings.issue_id == issue_id)
 
 def get_issue_articles(session, volume_id, issue_id):
-	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id).order_by(ojs.PublishedArticle.seq)
+	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id).order_by(ojs.PublishedArticle.seq)
 
 def get_collections(session):
 	return session.query(ojs.Collection).filter(ojs.Collection.disabled == None)
