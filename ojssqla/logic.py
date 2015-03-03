@@ -117,12 +117,12 @@ def get_article_list(session, filter_checks=None, order_by=None, articles_per_pa
 		order_list.append(desc(ojs.PublishedArticle.date_published))
 
 	if not filter_checks:
-		return session.query(ojs.Article).join(ojs.PublishedArticle).order_by(*order_list).offset(offset).limit(articles_per_page)
+		return session.query(ojs.Article).join(ojs.PublishedArticle).filter(ojs.PublishedArticle.date_published != None).order_by(*order_list).offset(offset).limit(articles_per_page)
 	else:
-		return session.query(ojs.Article).join(ojs.PublishedArticle).filter(ojs.Article.section_id.in_(filter_checks)).order_by(*order_list).offset(offset).limit(articles_per_page)
+		return session.query(ojs.Article).join(ojs.PublishedArticle).filter(ojs.PublishedArticle.date_published != None, ojs.Article.section_id.in_(filter_checks)).order_by(*order_list).offset(offset).limit(articles_per_page)
 
 def get_article_count(session):
-	return session.query(func.count(ojs.PublishedArticle.article_id)).one()
+	return session.query(func.count(ojs.PublishedArticle.article_id)).filter(ojs.PublishedArticle.date_published != None).one()
 
 def get_article(session, doi):
 	try:
@@ -181,17 +181,17 @@ def get_section_settings(session, section_id):
 def get_issues(session):
 	return session.query(ojs.Issue).filter(ojs.Issue.date_published != None).order_by(desc(ojs.Issue.volume), desc(ojs.Issue.number))
 
-def get_issue(session, volume_id, issue_id):
+def get_issue(session, volume_id, issue_id, ojs_id):
 	try:
-		return session.query(ojs.Issue).filter(ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id).one()
+		return session.query(ojs.Issue).filter(ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id, ojs.Issue.issue_id == ojs_id).one()
 	except NoResultFound:
 		return None
 
 def get_issue_settings(session, issue_id):
 	return session.query(ojs.IssueSettings).filter(ojs.IssueSettings.issue_id == issue_id)
 
-def get_issue_articles(session, volume_id, issue_id):
-	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id).order_by(ojs.PublishedArticle.seq)
+def get_issue_articles(session, volume_id, issue_id, ojs_id):
+	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id, ojs.Issue.issue_id == ojs_id).order_by(ojs.PublishedArticle.seq)
 
 def get_collections(session):
 	return session.query(ojs.Collection).filter(ojs.Collection.disabled == None)
@@ -401,7 +401,7 @@ def add_session_to_db(db_session, session_id, user, serialised_data, ip, user_ag
 	db_session.commit()
 
 def basic_search(session, search_term):
-	return session.query(ojs.Article).join(ojs.ArticleSetting).join(ojs.PublishedArticle).filter(or_(and_(ojs.ArticleSetting.setting_name == 'title', ojs.ArticleSetting.setting_value.match(search_term)), and_(ojs.ArticleSetting.setting_name == 'abstract', ojs.ArticleSetting.setting_value.match(search_term)) ) )
+	return session.query(ojs.Article).join(ojs.ArticleSetting).join(ojs.PublishedArticle).filter(ojs.PublishedArticle.date_published != None).filter(or_(and_(ojs.ArticleSetting.setting_name == 'title', ojs.ArticleSetting.setting_value.match(search_term)), and_(ojs.ArticleSetting.setting_name == 'abstract', ojs.ArticleSetting.setting_value.match(search_term)) ) )
 
 def get_user_settings(session, user_id):
 	return session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id)
