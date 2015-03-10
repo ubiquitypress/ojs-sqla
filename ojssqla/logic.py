@@ -178,6 +178,12 @@ def get_article_sections(session):
 def get_section_settings(session, section_id):
 	return session.query(ojs.SectionSettings).filter(ojs.SectionSettings.section_id == section_id)
 
+def get_section(session, section_id):
+	try:
+		return session.query(ojs.Section).filter(ojs.Section.section_id == section_id).one()
+	except NoResultFound:
+		return None
+
 def get_issues(session):
 	return session.query(ojs.Issue).filter(ojs.Issue.date_published != None, or_(ojs.Issue.access_status == 0, ojs.Issue.access_status == 1, and_(ojs.Issue.access_status == 2, ojs.Issue.open_access_date<=date.today()))).order_by(desc(ojs.Issue.volume), desc(ojs.Issue.number))
 
