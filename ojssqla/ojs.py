@@ -265,6 +265,11 @@ class Article(Base):
         lazy='joined',
         order_by="ArticleGalley.seq")
 
+    taxonomies = relationship(
+        "TaxonomyArticle",
+        backref="Article",
+        lazy='joined')
+
 
 class Issue(Base):
     __tablename__ = 'issues'
@@ -1582,3 +1587,31 @@ t_versions = Table(
     Column('sitewide', Integer, nullable=False, server_default=u"'0'"),
     Index('versions_pkey', 'product_type', 'product', 'major', 'minor', 'revision', 'build')
 )
+
+class Taxonomy(Base):
+    __tablename__ = 'taxonomy'
+
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(100))
+    note = Column(Text)
+
+    editors = relationship(u'TaxonomyEditor')
+    articles = relationship(u'TaxonomyArticle')
+
+class TaxonomyEditor(Base):
+    __tablename__ = 'taxonomy_editor'
+
+    id = Column(BigInteger, primary_key=True)
+    user_id = Column(ForeignKey('users.user_id'), nullable=False)
+    taxonomy_id = Column(ForeignKey('taxonomy.id'), nullable=False)
+
+    user = relationship(u'Users')
+
+class TaxonomyArticle(Base):
+    __tablename__ = 'taxonomy_article'
+
+    id = Column(BigInteger, primary_key=True)
+    taxonomy_id = Column(ForeignKey('taxonomy.id'), nullable=False)
+    article_id = Column(ForeignKey('articles.article_id'), nullable=False)
+
+    taxonomy = relationship(u'Taxonomy')

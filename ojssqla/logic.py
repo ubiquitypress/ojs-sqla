@@ -438,3 +438,9 @@ def get_current_issue(session):
 		return session.query(ojs.Issue).filter(ojs.Issue.current == 1).one()
 	except NoResultFound:
 		return None
+
+def get_article_taxonomies(session, article_id):
+	try:
+		return session.query(ojs.TaxonomyArticle).filter(ojs.TaxonomyArticle.article_id = article_id)
+	except NoResultFound:
+		return None
