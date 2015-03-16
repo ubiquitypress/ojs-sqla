@@ -552,21 +552,19 @@ class ControlledVocab(Base):
     assoc_id = Column(BigInteger, nullable=False, server_default=u"'0'")
 
 
-t_custom_issue_orders = Table(
-    'custom_issue_orders', metadata,
-    Column('issue_id', BigInteger, nullable=False, unique=True),
-    Column('journal_id', BigInteger, nullable=False),
-    Column('seq', Float(asdecimal=True), nullable=False, server_default=u"'0'")
-)
+class CustomIssueOrder(Base):
+    __tablename__ = 'custom_issue_orders'
+
+    issue_id = Column(BigInteger, nullable=False, unique=True, primary_key=True)
+    journal_id = Column(BigInteger, nullable=False, primary_key=True)
+    seq = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
 
 
-t_custom_section_orders = Table(
-    'custom_section_orders', metadata,
-    Column('issue_id', BigInteger, nullable=False),
-    Column('section_id', BigInteger, nullable=False),
-    Column('seq', Float(asdecimal=True), nullable=False, server_default=u"'0'"),
-    Index('custom_section_orders_pkey', 'issue_id', 'section_id')
-)
+class CustomSectionOrders(Base):
+    __tablename__ = 'custom_section_orders'
+    issue_id = Column(BigInteger, nullable=False, primary_key=True)
+    section_id = Column(BigInteger, nullable=False, primary_key=True)
+    seq = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
 
 
 class DataObjectTombstoneOaiSetObject(Base):

@@ -197,7 +197,10 @@ def get_issue_settings(session, issue_id):
 	return session.query(ojs.IssueSettings).filter(ojs.IssueSettings.issue_id == issue_id)
 
 def get_issue_articles(session, volume_id, issue_id, ojs_id):
-	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id, ojs.Issue.issue_id == ojs_id).order_by(ojs.PublishedArticle.seq)
+	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id, ojs.Issue.issue_id == ojs_id).order_by(ojs.Article.pages)
+
+def get_issue_articles_by_section_id(session, ojs_id, section_id):
+	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.issue_id == ojs_id, ojs.Article.section_id == section_id).order_by(ojs.Article.pages)
 
 def get_collections(session):
 	return session.query(ojs.Collection).filter(ojs.Collection.disabled == None)
@@ -439,8 +442,19 @@ def get_current_issue(session):
 	except NoResultFound:
 		return None
 
+
+def get_custom_order(session, issue_id):
+	try:
+		return session.query(ojs.CustomSectionOrders).filter(ojs.CustomSectionOrders.issue_id == issue_id).order_by(ojs.CustomSectionOrders.seq)
+	except NoResultFound:
+		return None
+
+def get_section_order(session):
+	return session.query(ojs.Section).order_by(ojs.Section.seq)
+
 def get_article_taxonomies(session, article_id):
 	try:
 		return session.query(ojs.TaxonomyArticle).filter(ojs.TaxonomyArticle.article_id = article_id)
 	except NoResultFound:
 		return None
+
