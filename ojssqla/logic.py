@@ -454,7 +454,11 @@ def get_section_order(session):
 
 def get_article_taxonomies(session, article_id):
 	try:
-		return session.query(ojs.TaxonomyArticle).filter(ojs.TaxonomyArticle.article_id = article_id)
+		return session.query(ojs.Taxonomy).join(ojs.TaxonomyArticle).filter(ojs.TaxonomyArticle.article_id = article_id).order_by(ojs.Taxonomy.name)
 	except NoResultFound:
 		return None
+
+def get_taxonomy(session):
+	return session.query(ojs.Taxonomy).order_by(ojs.Taxonomy.name)
+	
 
