@@ -266,7 +266,13 @@ def transfer_user(session, ojs_user_dict, ojs_user_settings_dict):
 	session.commit()
 	return new_obj.user_id
 
-def article_transfer_stage_one(session, article_one, article_settings):
+def transfer_taxonomy(session, article_id, taxonomy_id):
+	new_taxonomy_article = ojs.TaxonomyArticle(article_id=article_id, taxonomy_id=taxonomy_id)
+	session.add(new_taxonomy_article)
+	session.flush()
+
+
+def article_transfer_stage_one(session, article_one, article_settings, taxonomy_id=None):
 	'''
 	Creates the initial article, gets the id and creates its settings values
 	'''
@@ -286,6 +292,10 @@ def article_transfer_stage_one(session, article_one, article_settings):
 		new_article_setting = ojs.ArticleSetting(**kwargs)
 		session.add(new_article_setting)
 		session.flush
+
+	if taxonomy_id:
+		transfer_taxonomy(session, new_article.article_id, taxonomy_id)
+
 
 	session.commit()
 	return new_article.article_id
@@ -452,13 +462,8 @@ def get_custom_order(session, issue_id):
 def get_section_order(session):
 	return session.query(ojs.Section).order_by(ojs.Section.seq)
 
-def get_article_taxonomies(session, article_id):
-	try:
-		return session.query(ojs.Taxonomy).join(ojs.TaxonomyArticle).filter(ojs.TaxonomyArticle.article_id = article_id).order_by(ojs.Taxonomy.name)
-	except NoResultFound:
-		return None
 
-def get_taxonomy(session):
+def get_taxonomies(session):
 	return session.query(ojs.Taxonomy).order_by(ojs.Taxonomy.name)
-	
+
 

@@ -1603,7 +1603,7 @@ class TaxonomyEditor(Base):
     user_id = Column(ForeignKey('users.user_id'), nullable=False)
     taxonomy_id = Column(ForeignKey('taxonomy.id'), nullable=False)
 
-    user = relationship(u'Users')
+    user = relationship(u'User')
 
 class TaxonomyArticle(Base):
     __tablename__ = 'taxonomy_article'
