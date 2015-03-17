@@ -469,4 +469,10 @@ def get_taxonomies(session):
 def get_article_taxonomies(session, article_id):
 	return session.query(ojs.Taxonomy).join(ojs.TaxonomyArticle).filter(ojs.TaxonomyArticle.article_id == article_id)
 
+def get_role(session, user_id, role_id):
+	try:
+		return session.query(ojs.Roles).filter(ojs.Roles.user_id == user_id, ojs.Roles.role_id == role_id).one()
+	except NoResultFound:
+		return None
+
 
