@@ -1,5 +1,5 @@
 # coding: utf-8
-from sqlalchemy import BigInteger, Column, Date, DateTime, Float, Index, Integer, SmallInteger, String, Table, Text, ForeignKey
+from sqlalchemy import BigInteger, Column, Date, DateTime, Float, Index, Integer, SmallInteger, String, Table, Text, ForeignKey, Boolean
 from sqlalchemy.dialects.mysql.base import BIT
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref, column_property
@@ -1592,6 +1592,7 @@ class Taxonomy(Base):
     id = Column(BigInteger, primary_key=True)
     name = Column(String(100))
     note = Column(Text)
+    front_end = Column(Boolean, nullable=False, server_default=u"'0'")
 
     editors = relationship(u'TaxonomyEditor')
     articles = relationship(u'TaxonomyArticle')
