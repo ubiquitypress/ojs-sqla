@@ -950,23 +950,22 @@ class MetadataDescription(Base):
     seq = Column(BigInteger, nullable=False, server_default=u"'0'")
 
 
-t_metrics = Table(
-    'metrics', metadata,
-    Column('load_id', String(255), nullable=False, index=True),
-    Column('assoc_type', BigInteger, nullable=False),
-    Column('context_id', BigInteger, nullable=False),
-    Column('issue_id', BigInteger),
-    Column('submission_id', BigInteger),
-    Column('assoc_id', BigInteger, nullable=False),
-    Column('day', String(8)),
-    Column('month', String(6)),
-    Column('file_type', Integer),
-    Column('country_id', String(2)),
-    Column('region', SmallInteger),
-    Column('city', String(255)),
-    Column('metric_type', String(255), nullable=False, index=True),
-    Column('metric', Integer)
-)
+class Metrics(Base):
+    __tablename__ = 'metrics'
+    load_id = Column(String(255), nullable=False, index=True)
+    assoc_type = Column(BigInteger, nullable=False, primary_key=True)
+    context_id = Column(BigInteger, nullable=False)
+    issue_id = Column(BigInteger)
+    submission_id = Column(BigInteger, primary_key=True)
+    assoc_id = Column(BigInteger, nullable=False, primary_key=True)
+    day = Column(String(8))
+    month = Column(String(6))
+    file_type = Column(Integer)
+    country_id = Column(String(2))
+    region = Column(SmallInteger)
+    city = Column(String(255))
+    metric_type = Column(String(255), nullable=False, index=True)
+    metric = Column(Integer)
 
 
 class Mutex(Base):
@@ -1592,7 +1591,7 @@ class Taxonomy(Base):
     id = Column(BigInteger, primary_key=True)
     name = Column(String(100))
     note = Column(Text)
-    front_end = Column(Boolean, nullable=False, server_default=u"'0'")
+    front_end = Column(Integer)
 
     editors = relationship(u'TaxonomyEditor')
     articles = relationship(u'TaxonomyArticle')

@@ -117,9 +117,9 @@ def get_article_list(session, filter_checks=None, order_by=None, articles_per_pa
 		order_list.append(desc(ojs.PublishedArticle.date_published))
 
 	if not filter_checks:
-		return session.query(ojs.Article).join(ojs.PublishedArticle).filter(ojs.PublishedArticle.date_published != None).order_by(*order_list).offset(offset).limit(articles_per_page)
+		return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None).order_by(*order_list).offset(offset).limit(articles_per_page)
 	else:
-		return session.query(ojs.Article).join(ojs.PublishedArticle).filter(ojs.PublishedArticle.date_published != None, ojs.Article.section_id.in_(filter_checks)).order_by(*order_list).offset(offset).limit(articles_per_page)
+		return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None, ojs.Article.section_id.in_(filter_checks)).order_by(*order_list).offset(offset).limit(articles_per_page)
 
 def get_article_count(session):
 	return session.query(func.count(ojs.PublishedArticle.article_id)).filter(ojs.PublishedArticle.date_published != None).one()
@@ -464,7 +464,7 @@ def get_section_order(session):
 
 
 def get_taxonomies(session):
-	return session.query(ojs.Taxonomy).filter(ojs.Taxonomy.front_end == True).order_by(ojs.Taxonomy.name)
+	return session.query(ojs.Taxonomy).filter(ojs.Taxonomy.front_end == 1).order_by(ojs.Taxonomy.name)
 
 def get_article_taxonomies(session, article_id):
 	return session.query(ojs.Taxonomy).join(ojs.TaxonomyArticle).filter(ojs.TaxonomyArticle.article_id == article_id)
@@ -474,5 +474,8 @@ def get_role(session, user_id, role_id):
 		return session.query(ojs.Roles).filter(ojs.Roles.user_id == user_id, ojs.Roles.role_id == role_id).one()
 	except NoResultFound:
 		return None
+
+def get_ojs_metrics(session, article_id):
+	return session.query(ojs.Metrics).filter(ojs.Metrics.submission_id == article_id).order_by(asc(ojs.Metrics.assoc_type))
 
 
