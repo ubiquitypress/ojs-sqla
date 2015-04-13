@@ -386,6 +386,18 @@ def get_login_user(session, username, password):
 	except NoResultFound:
 		return None
 
+def set_password(session, user_id, password):
+	user = session.query(ojs.User).filter(ojs.User.user_id == user_id).one()
+	print user.password
+	user.password = password
+	session.commit()
+
+def get_user_from_email(session, email):
+	try:
+		return session.query(ojs.User).filter(ojs.User.email == email).one()
+	except NoResultFound:
+		return None
+
 def get_session_from_sessionid(session, ojs_session_id):
 	try:
 		return session.query(ojs.Sessions).filter(ojs.Sessions.session_id == ojs_session_id).one()
