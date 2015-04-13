@@ -397,7 +397,7 @@ def get_user_from_sessionid(session, ojs_session_id):
 
 	if user_session:
 		try:
-			return session.query(ojs.User).filter(ojs.User.user_id == user_session.user_id).one()
+			return session.query(ojs.User).join(ojs.Roles).filter(ojs.User.user_id == user_session.user_id).one()
 		except NoResultFound:
 			return None
 	else:

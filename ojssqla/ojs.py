@@ -1231,7 +1231,7 @@ class Roles(Base):
     __tablename__ = 'roles'
 
     journal_id = Column(BigInteger, nullable=False, index=True, primary_key=True)
-    user_id = Column(BigInteger, nullable=False, index=True, primary_key=True)
+    user_id = Column(ForeignKey('users.user_id'), nullable=False, index=True, primary_key=True)
     role_id = Column(BigInteger, nullable=False, index=True, primary_key=True)
 
 
@@ -1555,6 +1555,8 @@ class User(Base):
     suffix = Column(String(40))
     billing_address = Column(String(255))
     inline_help = Column(Integer)
+
+    roles = relationship(u'Roles', primaryjoin='User.user_id == Roles.user_id', lazy='joined')
 
 class GroupMemberships(Base):
     __tablename__ = 'group_memberships'
