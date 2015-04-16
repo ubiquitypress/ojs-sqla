@@ -388,6 +388,18 @@ def get_login_user(session, username, password):
 	except NoResultFound:
 		return None
 
+def set_password(session, user_id, password):
+	user = session.query(ojs.User).filter(ojs.User.user_id == user_id).one()
+	print user.password
+	user.password = password
+	session.commit()
+
+def get_user_from_email(session, email):
+	try:
+		return session.query(ojs.User).filter(ojs.User.email == email).one()
+	except NoResultFound:
+		return None
+
 def get_session_from_sessionid(session, ojs_session_id):
 	try:
 		return session.query(ojs.Sessions).filter(ojs.Sessions.session_id == ojs_session_id).one()
@@ -480,4 +492,13 @@ def get_role(session, user_id, role_id):
 def get_ojs_metrics(session, article_id):
 	return session.query(ojs.Metrics).filter(ojs.Metrics.submission_id == article_id).order_by(asc(ojs.Metrics.assoc_type))
 
+def add_role_to_user(session, role, user_id):
+	kwargs = {
+		'journal_id': 1,
+		'user_id': user_id,
+		'role_id': role,
+	}
 
+	new_role = ojs.Roles(**kwargs)
+	session.add(new_role)
+	session.commit() 
