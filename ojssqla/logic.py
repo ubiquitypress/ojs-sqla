@@ -115,13 +115,15 @@ def get_article_list(session, filter_checks=None, order_by=None, articles_per_pa
 
 	if order_by == 'page_number':
 		order_list.append(desc(ojs.Article.pages))
+	elif order_by == 'section':
+		order_list.append(desc(ojs.Section.seq))
 	else:
 		order_list.append(desc(ojs.PublishedArticle.date_published))
 
 	if not filter_checks:
-		return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None).order_by(*order_list).offset(offset).limit(articles_per_page)
+		return session.query(ojs.Article).join(ojs.Section).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None).order_by(*order_list).offset(offset).limit(articles_per_page)
 	else:
-		return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None, ojs.Article.section_id.in_(filter_checks)).order_by(*order_list).offset(offset).limit(articles_per_page)
+		return session.query(ojs.Article).join(ojs.Section).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None, ojs.Article.section_id.in_(filter_checks)).order_by(*order_list).offset(offset).limit(articles_per_page)
 
 def get_article_count(session):
 	return session.query(func.count(ojs.PublishedArticle.article_id)).filter(ojs.PublishedArticle.date_published != None).one()
