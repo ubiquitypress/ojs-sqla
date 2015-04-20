@@ -224,7 +224,7 @@ class Article(Base):
     locale = Column(String(5))
     user_id = Column(BigInteger, nullable=False, index=True)
     journal_id = Column(BigInteger, nullable=False, index=True)
-    section_id = Column(BigInteger, index=True)
+    section_id = Column(ForeignKey('sections.section_id'), index=True, primary_key=True)
     language = Column(String(10), server_default=u"'en'")
     comments_to_ed = Column(Text)
     citations = Column(Text)
@@ -1322,6 +1322,8 @@ class Section(Base):
     abstract_word_count = Column(BigInteger)
 
     settings = relationship(u'SectionSettings', primaryjoin='Section.section_id == SectionSettings.section_id')
+    settings = relationship(u'Article', primaryjoin='Section.section_id == Article.section_id')
+
 
 class Sessions(Base):
     __tablename__ = 'sessions'
