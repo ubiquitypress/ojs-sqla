@@ -281,6 +281,7 @@ def article_transfer_stage_one(session, article_one, article_settings, taxonomy_
 	session.add(new_article)
 	session.flush()
 
+	# Add Article Settings
 	for k,v in article_settings.iteritems():
 		kwargs = {
 			'article_id': new_article.article_id,
@@ -291,11 +292,22 @@ def article_transfer_stage_one(session, article_one, article_settings, taxonomy_
 		}
 		new_article_setting = ojs.ArticleSetting(**kwargs)
 		session.add(new_article_setting)
-		session.flush
+		session.flush()
+
+	# Add Review Round
+	review_kwargs = {
+		'submission_id': new_article.article_id,
+		'stage_id': None,
+		'round': 1,
+		'review_revision': 1,
+		'status': None,
+	}
+	new_review_round = ojs.ReviewRound(**review_kwargs)
+	session.add(new_review_round)
+	session.flush()
 
 	if taxonomy_id:
 		transfer_taxonomy(session, new_article.article_id, taxonomy_id)
-
 
 	session.commit()
 	return new_article.article_id
