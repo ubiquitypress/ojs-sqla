@@ -150,7 +150,10 @@ def get_article_by_pubid(session, pubid):
 	try:
 		return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.ArticleSetting.setting_name == 'pub-id::publisher-id', ojs.ArticleSetting.setting_value == pubid).one()
 	except NoResultFound:
-		return None
+		try:
+			return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.Article.article_id == pubid).one()
+		except NoResultFound:
+			return None
 
 def get_all_article_settings(session, article_id):
 	return session.query(ojs.ArticleSetting).filter(ojs.ArticleSetting.article_id == article_id)
