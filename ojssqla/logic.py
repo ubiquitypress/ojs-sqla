@@ -58,7 +58,7 @@ def editorial_team(session):
 	for g in groups:
 		members = session.query(ojs.GroupMemberships).filter(ojs.GroupMemberships.group_id == g.group_id).order_by(ojs.GroupMemberships.seq)
 		group = session.query(ojs.Group).filter(ojs.Group.group_id == g.group_id).one()
-		
+
 		group_dict[g.setting_value] = [{'first_name': m.user.first_name, 'last_name': m.user.last_name, 'email': m.user.email, 'url': m.user.url,  'affiliation': get_user_affiliation(session, m.user.user_id), 'bio': get_user_bio(session, m.user.user_id), 'country': m.user.country, 'display_email': group.publish_email } for m in members]
 
 	return group_dict
@@ -143,6 +143,12 @@ def get_article_by_id(session, doi):
 def get_article_by_id(session, article_id):
 	try:
 		return session.query(ojs.Article).filter(ojs.Article.article_id == article_id).one()
+	except NoResultFound:
+		return None
+
+def get_article_by_pubid(session, pubid):
+	try:
+		return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.ArticleSetting.setting_name == 'pub-id::publisher-id', ojs.ArticleSetting.setting_value == pubid).one()
 	except NoResultFound:
 		return None
 
@@ -245,7 +251,7 @@ def get_announcement(session, announcement_id):
 		return session.query(ojs.Announcement).filter(ojs.Announcement.announcement_id == announcement_id).one()
 	except NoResultFound:
 		return None
-		
+
 def get_announcement_settings(session, announcement_id):
 	return session.query(ojs.AnnouncementSettings).filter(ojs.AnnouncementSettings.announcement_id == announcement_id)
 
@@ -515,4 +521,4 @@ def add_role_to_user(session, role, user_id):
 
 	new_role = ojs.Roles(**kwargs)
 	session.add(new_role)
-	session.commit() 
+	session.commit()
