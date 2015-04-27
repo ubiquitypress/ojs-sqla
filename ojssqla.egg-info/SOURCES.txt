@@ -1,0 +1,10 @@
+MANIFEST.in
+README.md
+ojssqla/__init__.py
+ojssqla/logic.py
+ojssqla/ojs.py
+ojssqla.egg-info/PKG-INFO
+ojssqla.egg-info/SOURCES.txt
+ojssqla.egg-info/dependency_links.txt
+ojssqla.egg-info/not-zip-safe
+ojssqla.egg-info/top_level.txt

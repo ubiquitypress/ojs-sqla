@@ -186,8 +186,11 @@ def get_article_file(session, file_id):
 	return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.file_id == file_id).one()
 
 def get_article_figure(session, article_id, orig_filename):
-	return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.article_id == article_id, ojs.ArticleFile.original_file_name == orig_filename).order_by(desc(ojs.ArticleFile.revision)).one()
-
+	try:
+		return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.article_id == article_id, ojs.ArticleFile.original_file_name == orig_filename).order_by(desc(ojs.ArticleFile.revision)).one()
+	except NoResultFound:
+		return None
+		
 def get_article_sections(session):
 	return session.query(ojs.Section).order_by(ojs.Section.seq)
 
