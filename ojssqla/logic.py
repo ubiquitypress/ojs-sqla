@@ -132,7 +132,10 @@ def get_article(session, doi):
 	try:
 		return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.ArticleSetting.setting_name == 'pub-id::doi', ojs.ArticleSetting.setting_value == doi).one()
 	except NoResultFound:
-		return None
+		try:
+			return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.ArticleSetting.setting_name == 'pub-id::publisher-id', ojs.ArticleSetting.setting_value == doi).one()
+		except NoResultFound:
+			return None
 
 def get_article_by_id(session, doi):
 	try:
