@@ -1,12 +1,14 @@
 import ojs
 import collections
+
 import logic
 
 from sqlalchemy.orm import joinedload,subqueryload, contains_eager
-from sqlalchemy import desc, asc, func, and_, or_
+from sqlalchemy import desc, asc, func, and_, or_, not_
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
+
 from phpserialize import *
 
 #
@@ -36,18 +38,22 @@ def dict_ojs_settings_results(settings_results):
 	results_dict = {}
 
 	for row in settings_results:
+<<<<<<< HEAD
 		results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = row.setting_value
+=======
+		results_dict[row.setting_name] = row.setting_value
+>>>>>>> ec5a8f85f08ae0ec4aaedfa5e1cb1752b4b65c46
 
 	return results_dict
 
 def deltadate(days, start_date=None):
+
 	rdate = (start_date or date.today()) - timedelta(days)
 	return rdate.strftime('%Y-%m-%d')
 
 #
 # ORM Queries
 #
-
 
 def get_user_bio(session, user_id):
 	try:
@@ -89,3 +95,18 @@ def get_sections(session):
 def get_article_events(session):
 	events = all_as_dict(session.query(ojs.ArticleEventLog))
 	return events
+
+
+def ojs_journal_settings(session):
+	return dict_ojs_settings_results(session.query(ojs.JournalSetting).filter(not_(ojs.JournalSetting.setting_name.contains('::'))))
+
+def get_journal_users(session):
+	users = all_as_dict(session.query(ojs.User).join(ojs.Roles))
+
+	for user in users:
+		user['settings'] = get_user_settings(session, user['user_id'])
+
+	return users
+
+def get_user_settings(session, user_id):
+	return dict_ojs_settings_results(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id))
