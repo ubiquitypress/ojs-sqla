@@ -416,7 +416,6 @@ def get_login_user(session, username, password):
 
 def set_password(session, user_id, password):
 	user = session.query(ojs.User).filter(ojs.User.user_id == user_id).one()
-	print user.password
 	user.password = password
 	session.commit()
 
