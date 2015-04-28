@@ -38,11 +38,8 @@ def dict_ojs_settings_results(settings_results):
 	results_dict = {}
 
 	for row in settings_results:
-<<<<<<< HEAD
 		results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = row.setting_value
-=======
-		results_dict[row.setting_name] = row.setting_value
->>>>>>> ec5a8f85f08ae0ec4aaedfa5e1cb1752b4b65c46
+		#results_dict[row.setting_name] = row.setting_value
 
 	return results_dict
 
