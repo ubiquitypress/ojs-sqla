@@ -118,6 +118,13 @@ def get_editor_decissions(session, article_id, decision_to_get):
 
 	return as_dict(session.query(ojs.EditDecision).filter(ojs.EditDecision.article_id == article_id, ojs.EditDecision.decision == decision_to_get).order_by(desc(ojs.EditDecision.edit_decision_id)).first())
 
+def get_author_settings(session, authors):
+
+	for author in authors:
+		author['settings'] = dict_ojs_settings_results(session.query(ojs.AuthorSetting).filter(ojs.AuthorSetting.author_id == author.get('author_id')))
+
+		return authors
+
 def get_articles(session):
 
 	articles = all_as_dict(session.query(ojs.Article).join(ojs.Section).join(ojs.PublishedArticle).join(ojs.Issue))
@@ -128,6 +135,7 @@ def get_articles(session):
 		article['published_article'] = get_published_article(session, article['article_id'])
 		article['latest_rejected_decission'] = get_editor_decissions(session, article['article_id'], 4)
 		article['latest_accepted_decission'] = get_editor_decissions(session, article['article_id'], 1)
+		article['authors'] = get_author_settings(session, article['authors'])
 
 	return articles
 
