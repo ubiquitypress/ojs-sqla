@@ -271,14 +271,6 @@ class Article(Base):
         backref="Article",
         lazy='joined')
 
-    article_event_log = relationship(
-        "ArticleEventLog",
-        backref="Article",
-        lazy="joined",
-        primaryjoin='Article.article_id == ArticleEventLog.article_id'
-        )
-
-
 class Issue(Base):
     __tablename__ = 'issues'
 
