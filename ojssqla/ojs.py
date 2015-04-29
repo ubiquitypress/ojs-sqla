@@ -603,12 +603,19 @@ class EditAssignment(Base):
 
     edit_id = Column(BigInteger, primary_key=True)
     article_id = Column(BigInteger, nullable=False, index=True)
-    editor_id = Column(BigInteger, nullable=False, index=True)
+    editor_id = Column(ForeignKey('users.user_id'), nullable=False, index=True)
     can_edit = Column(Integer, nullable=False, server_default=u"'1'")
     can_review = Column(Integer, nullable=False, server_default=u"'1'")
     date_assigned = Column(DateTime)
     date_notified = Column(DateTime)
     date_underway = Column(DateTime)
+
+    editor = relationship(
+        "User",
+        uselist=False,
+        backref="User",
+        lazy='joined',
+        primaryjoin='EditAssignment.editor_id == User.user_id')
 
 
 class EditDecision(Base):

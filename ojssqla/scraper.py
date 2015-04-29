@@ -139,3 +139,9 @@ def get_galley_file(session, galley_file_id):
 		return as_dict(session.query(ojs.ArticleFile).filter(ojs.ArticleFile.file_id == galley_file_id).one())
 	except NoResultFound:
 		return None
+
+def get_edit_assignments(session, article_id):
+	return all_as_dict(session.query(ojs.EditAssignment).filter(ojs.EditAssignment.article_id == article_id))
+
+def get_revi_assignments(session, article_id):
+	return all_as_dict(session.query(ojs.ReviewAssignment).filter(ojs.ReviewAssignment.submission_id == article_id))
