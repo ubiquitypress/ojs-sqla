@@ -112,13 +112,11 @@ def get_article_events(session, assoc_id):
 	return all_as_dict(session.query(ojs.EventLog).filter(ojs.EventLog.assoc_id == assoc_id, ojs.EventLog.assoc_type == 257))
 
 def get_published_article(session, article_id):
-	return as_dict(session.query(ojs.PublishedArticle).filter(ojs.PublishedArticle.article_id == article_id))
+	return as_dict(session.query(ojs.PublishedArticle).filter(ojs.PublishedArticle.article_id == article_id).one())
 
-def get_editor_decissions(session, article_id):
+def get_editor_decissions(session, article_id, decision_to_get):
 
-	latest_accepted_decission = as_dict(session.query(func.max(ojs.EditDecision.edit_decision_id)).filter(ojs.EditDecision.article_id == article_id).filter(ojs.EditDecision.decision == 1))
-	latest_rejected_decission = as_dict(session.query(func.max(ojs.EditDecision.edit_decision_id)).filter(ojs.EditDecision.article_id == article_id).filter(ojs.EditDecision.decision == 4))
-	return [latest_rejected_decission, latest_accepted_decission]
+	return as_dict(session.query(ojs.EditDecision).filter(ojs.EditDecision.article_id == article_id, ojs.EditDecision.decision == decision_to_get).order_by(desc(ojs.EditDecision.edit_decision_id)).first())
 
 def get_articles(session):
 
@@ -128,8 +126,8 @@ def get_articles(session):
 		article['events'] = get_article_events(session, article['article_id'])
 		article['settings'] = get_article_settings(session, article['article_id'])
 		article['published_article'] = get_published_article(session, article['article_id'])
-		article['latest_rejected_decission'] = get_editor_decissions(session, article['article_id'])[0]
-		article['latest_accepted_decission'] = get_editor_decissions(session, article['article_id'])[1]
+		article['latest_rejected_decission'] = get_editor_decissions(session, article['article_id'], 4)
+		article['latest_accepted_decission'] = get_editor_decissions(session, article['article_id'], 1)
 
 	return articles
 
