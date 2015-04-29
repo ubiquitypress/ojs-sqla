@@ -257,7 +257,8 @@ class Article(Base):
     authors = relationship(
         "Author",
         backref="Article",
-        lazy='joined')
+        lazy='joined',
+        order_by="Author.seq")
 
     galleys = relationship(
         "ArticleGalley",
