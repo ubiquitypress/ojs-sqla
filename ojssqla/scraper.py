@@ -45,8 +45,8 @@ def dict_ojs_settings_results(settings_results):
 
 def deltadate(days, start_date=None):
 
-	rdate = (start_date or date.today()) - timedelta(days)
-	return rdate.strftime('%Y-%m-%d')
+	rdate = (start_date or datetime.today()) - timedelta(days)
+	return rdate
 
 #
 # ORM Queries
@@ -107,3 +107,18 @@ def get_journal_users(session):
 
 def get_user_settings(session, user_id):
 	return dict_ojs_settings_results(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id))
+
+def get_article_events(session, assoc_id):
+	return all_as_dict(session.query(ojs.EventLog).filter(ojs.EventLog.assoc_id == assoc_id, ojs.EventLog.assoc_type == 257))
+
+def get_articles(session):
+
+	articles = all_as_dict(session.query(ojs.Article).join(ojs.Section).join(ojs.PublishedArticle).join(ojs.Issue))
+
+	for article in articles:
+		article['events'] = get_article_events(session, article['article_id'])
+		article['settings'] = get_article_settings(session, article['article_id'])
+	return articles
+
+def get_article_settings(session, article_id):
+	return dict_ojs_settings_results(session.query(ojs.ArticleSetting).filter(ojs.ArticleSetting.article_id == article_id))

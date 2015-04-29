@@ -91,7 +91,7 @@ class ArticleEventLog(Base):
     __tablename__ = 'article_event_log'
 
     log_id = Column(BigInteger, primary_key=True)
-    article_id = Column(BigInteger, nullable=False, index=True)
+    article_id = Column(BigInteger, ForeignKey('articles.article_id'), nullable=False, primary_key=True)
     user_id = Column(BigInteger, nullable=False)
     date_logged = Column(DateTime, nullable=False)
     ip_address = Column(String(15), nullable=False)
@@ -269,6 +269,13 @@ class Article(Base):
         "TaxonomyArticle",
         backref="Article",
         lazy='joined')
+
+    article_event_log = relationship(
+        "ArticleEventLog",
+        backref="Article",
+        lazy="joined",
+        primaryjoin='Article.article_id == ArticleEventLog.article_id'
+        )
 
 
 class Issue(Base):
