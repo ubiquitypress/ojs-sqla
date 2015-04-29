@@ -135,3 +135,9 @@ def get_articles(session):
 
 def get_article_settings(session, article_id):
 	return dict_ojs_settings_results(session.query(ojs.ArticleSetting).filter(ojs.ArticleSetting.article_id == article_id))
+
+def get_galley_file(session, galley_file_id):
+	try:
+		return as_dict(session.query(ojs.ArticleFile).filter(ojs.ArticleFile.file_id == galley_file_id).one())
+	except NoResultFound:
+		return None
