@@ -113,7 +113,10 @@ def get_article_events(session, assoc_id):
 	return all_as_dict(session.query(ojs.EventLog).filter(ojs.EventLog.assoc_id == assoc_id, ojs.EventLog.assoc_type == 257))
 
 def get_published_article(session, article_id):
-	return as_dict(session.query(ojs.PublishedArticle).filter(ojs.PublishedArticle.article_id == article_id).one())
+	try:
+		return as_dict(session.query(ojs.PublishedArticle).filter(ojs.PublishedArticle.article_id == article_id).one())
+	except NoResultFound:
+		return None
 
 def get_editor_decissions(session, article_id, decision_to_get):
 
@@ -127,7 +130,7 @@ def get_author_settings(session, authors):
 
 def get_articles(session):
 
-	articles = all_as_dict(session.query(ojs.Article).join(ojs.Section).join(ojs.PublishedArticle).join(ojs.Issue))
+	articles = all_as_dict(session.query(ojs.Article).join(ojs.Section))
 
 	for article in articles:
 		article['events'] = get_article_events(session, article['article_id'])
