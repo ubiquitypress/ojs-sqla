@@ -130,7 +130,7 @@ def get_author_settings(session, authors):
 
 def get_articles(session):
 
-	articles = all_as_dict(session.query(ojs.Article).join(ojs.Section))
+	articles = all_as_dict(session.query(ojs.Article).join(ojs.Section).filter(ojs.Article.date_submitted != None))
 
 	for article in articles:
 		article['events'] = get_article_events(session, article['article_id'])
