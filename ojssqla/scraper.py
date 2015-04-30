@@ -8,6 +8,7 @@ from sqlalchemy import desc, asc, func, and_, or_, not_
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from datetime import date, datetime, timedelta
+from pprint import pprint
 
 from phpserialize import *
 
@@ -122,8 +123,7 @@ def get_author_settings(session, authors):
 
 	for author in authors:
 		author['settings'] = dict_ojs_settings_results(session.query(ojs.AuthorSetting).filter(ojs.AuthorSetting.author_id == author.get('author_id')))
-
-		return authors
+	return authors
 
 def get_articles(session):
 
