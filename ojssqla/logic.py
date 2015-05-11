@@ -467,8 +467,14 @@ def basic_search(session, search_term):
 def get_user_settings(session, user_id):
 	return session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id)
 
+def get_user_settings_dict(session, user_id):
+	return dict_ojs_settings_results(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id))
+
 def get_author_settings(session, author_id):
 	return session.query(ojs.AuthorSetting).filter(ojs.AuthorSetting.author_id == author_id)
+
+def get_author_settings_dict(session, author_id):
+	return dict_ojs_settings_results(session.query(ojs.AuthorSetting).filter(ojs.AuthorSetting.author_id == author_id))
 
 def get_orcid(session, orcid):
 	try:
@@ -530,3 +536,35 @@ def add_role_to_user(session, role, user_id):
 	new_role = ojs.Roles(**kwargs)
 	session.add(new_role)
 	session.commit()
+
+def set_new_user_details(session, user_id, user_dict, settings_dict):
+	user = session.query(ojs.User).filter(ojs.User.user_id == user_id).one()
+	# update user details 
+	for k,v, in user_dict.iteritems():
+		setattr(user, k, v)
+		session.flush
+
+	for k,v in settings_dict.iteritems():
+		# update user setting
+		try:
+			setting = session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == k).one()
+			setattr(setting, 'setting_value', v )
+			session.flush()
+
+		# or create it:	
+		except NoResultFound:
+			kwargs = {
+					'user_id': user_id,
+					'setting_name': k,
+					'setting_value': v,
+					'locale': 'en_US',
+					'setting_type': 'string', # only for introduced settings, so fairly safe but only if we do validation on our end
+					'assoc_type': 0,
+				}
+			new_setting = ojs.UserSetting(**kwargs)
+			session.add(new_setting)
+	
+	session.commit()
+
+
+
