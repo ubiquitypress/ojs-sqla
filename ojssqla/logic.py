@@ -86,7 +86,7 @@ def get_additional_policies(session):
 
 def get_section_policies(session):
 	section_dict = collections.OrderedDict()
-	sections = session.query(ojs.SectionSettings).join(ojs.Section).filter(ojs.SectionSettings.setting_name == 'title').order_by(ojs.Section.seq)
+	sections = session.query(ojs.SectionSettings).join(ojs.Section).filter(ojs.SectionSettings.setting_name == 'title', ojs.Section.hide_about == 0).order_by(ojs.Section.seq)
 
 	for s in sections:
 		section = as_dict(session.query(ojs.Section).filter(ojs.Section.section_id == s.section_id).one())
