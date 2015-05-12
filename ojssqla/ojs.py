@@ -528,7 +528,16 @@ class ControlledVocabEntry(Base):
     controlled_vocab_id = Column(BigInteger, nullable=False)
     seq = Column(Float(asdecimal=True))
 
+class ControlledVocabEntrySettings(Base):
+    __tablename__ = 'controlled_vocab_entry_settings'
 
+    controlled_vocab_entry_id = controlled_vocab_entry_id = Column(BigInteger, nullable=False, primary_key=True)
+    locale = Column(String(5), nullable=False, server_default=u"''")
+    setting_name = Column(String(255), nullable=False)
+    setting_value = Column(String(255), nullable=False)
+    setting_type = Column(String(6), nullable=False)
+
+'''
 t_controlled_vocab_entry_settings = Table(
     'controlled_vocab_entry_settings', metadata,
     Column('controlled_vocab_entry_id', BigInteger, nullable=False, index=True),
@@ -538,6 +547,7 @@ t_controlled_vocab_entry_settings = Table(
     Column('setting_type', String(6), nullable=False),
     Index('c_v_e_s_pkey', 'controlled_vocab_entry_id', 'locale', 'setting_name')
 )
+'''
 
 
 class ControlledVocab(Base):
@@ -1511,13 +1521,20 @@ t_usage_stats_temporary_records = Table(
     Column('file_type', Integer)
 )
 
+class UserInterests(Base):
+    __tablename__ = 'user_interests'
 
+    user_id = Column(BigInteger, nullable=False)
+    controlled_vocab_entry_id = Column(BigInteger, nullable=False, primary_key=True)
+
+'''
 t_user_interests = Table(
     'user_interests', metadata,
     Column('user_id', BigInteger, nullable=False),
     Column('controlled_vocab_entry_id', BigInteger, nullable=False),
     Index('u_e_pkey', 'user_id', 'controlled_vocab_entry_id')
 )
+'''
 
 class UserSetting(Base):
     __tablename__ = 'user_settings'

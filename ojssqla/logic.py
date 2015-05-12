@@ -86,7 +86,7 @@ def get_additional_policies(session):
 
 def get_section_policies(session):
 	section_dict = collections.OrderedDict()
-	sections = session.query(ojs.SectionSettings).join(ojs.Section).filter(ojs.SectionSettings.setting_name == 'title').order_by(ojs.Section.seq)
+	sections = session.query(ojs.SectionSettings).join(ojs.Section).filter(ojs.SectionSettings.setting_name == 'title', ojs.Section.hide_about == 0).order_by(ojs.Section.seq)
 
 	for s in sections:
 		section = as_dict(session.query(ojs.Section).filter(ojs.Section.section_id == s.section_id).one())
@@ -245,6 +245,13 @@ def get_collection_user_name(session, user_id):
 def get_collection_articles(session, collection_articles):
 	article_ids = [article.get('published_article_id') for article in collection_articles]
 	return session.query(ojs.Article).join(ojs.PublishedArticle).filter(ojs.PublishedArticle.published_article_id.in_(article_ids)).order_by(desc(ojs.PublishedArticle.date_published))
+
+def get_collections_from_article(session, article):
+	collections_article = all_as_dict(session.query(ojs.CollectionArticle).filter(ojs.CollectionArticle.published_article_id == article['published_article'].published_article_id))
+	collections = []
+	for collection_article in collections_article:
+		collections.append(as_dict(session.query(ojs.Collection).filter(ojs.Collection.id == collection_article.get('collection_id')).one()))
+	return collections
 
 def get_latest_announcement(session):
 	try:
@@ -467,8 +474,14 @@ def basic_search(session, search_term):
 def get_user_settings(session, user_id):
 	return session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id)
 
+def get_user_settings_dict(session, user_id):
+	return dict_ojs_settings_results(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id))
+
 def get_author_settings(session, author_id):
 	return session.query(ojs.AuthorSetting).filter(ojs.AuthorSetting.author_id == author_id)
+
+def get_author_settings_dict(session, author_id):
+	return dict_ojs_settings_results(session.query(ojs.AuthorSetting).filter(ojs.AuthorSetting.author_id == author_id))
 
 def get_orcid(session, orcid):
 	try:
@@ -530,3 +543,66 @@ def add_role_to_user(session, role, user_id):
 	new_role = ojs.Roles(**kwargs)
 	session.add(new_role)
 	session.commit()
+
+def set_new_user_details(session, user_id, user_dict, settings_dict):
+	user = session.query(ojs.User).filter(ojs.User.user_id == user_id).one()
+	# update user details 
+	for k,v, in user_dict.iteritems():
+		setattr(user, k, v)
+		session.flush
+
+	for k,v in settings_dict.iteritems():
+		# update user setting
+		try:
+			setting = session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == k).one()
+			setattr(setting, 'setting_value', v )
+			session.flush()
+
+		# or create it:	
+		except NoResultFound:
+			kwargs = {
+					'user_id': user_id,
+					'setting_name': k,
+					'setting_value': v,
+					'locale': 'en_US',
+					'setting_type': 'string', # only for introduced settings, so fairly safe but only if we do validation on our end
+					'assoc_type': 0,
+				}
+			new_setting = ojs.UserSetting(**kwargs)
+			session.add(new_setting)
+	
+	session.commit()
+
+def set_reviewing_interest(session, interest, user):
+	#First, the new vocab entry
+	kwargs = {
+		'controlled_vocab_id': 302
+	}
+
+	new_vocab_entry = ojs.ControlledVocabEntry(**kwargs)
+	session.add(new_vocab_entry)
+	session.commit()
+
+	#second, relate it to the user
+	kwargs = {
+		'controlled_vocab_entry_id': new_vocab_entry.controlled_vocab_entry_id,
+		'user_id': user
+	}
+	new_user_interest =  ojs.UserInterests(**kwargs)
+	session.add(new_user_interest)
+	session.commit()
+
+	#third, insert the vocab details
+	kwargs = {
+		'controlled_vocab_entry_id': new_vocab_entry.controlled_vocab_entry_id,
+		'setting_name': 'interest',
+		'setting_type': 'string',
+		'setting_value': interest.name
+	}
+	new_controlled_vocab_settings = ojs.ControlledVocabEntrySettings(**kwargs)
+	session.add(new_controlled_vocab_settings)
+	session.commit()
+
+
+
+
