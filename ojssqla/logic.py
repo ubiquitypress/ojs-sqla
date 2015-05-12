@@ -566,5 +566,36 @@ def set_new_user_details(session, user_id, user_dict, settings_dict):
 	
 	session.commit()
 
+def set_reviewing_interest(session, interest, user):
+	#First, the new vocab entry
+	kwargs = {
+		'controlled_vocab_id': 302
+	}
+
+	new_vocab_entry = ojs.ControlledVocabEntry(**kwargs)
+	session.add(new_vocab_entry)
+	session.commit()
+
+	#second, relate it to the user
+	kwargs = {
+		'controlled_vocab_entry_id': new_vocab_entry.controlled_vocab_entry_id,
+		'user_id': user
+	}
+	new_user_interest =  ojs.UserInterests(**kwargs)
+	session.add(new_user_interest)
+	session.commit()
+
+	#third, insert the vocab details
+	kwargs = {
+		'controlled_vocab_entry_id': new_vocab_entry.controlled_vocab_entry_id,
+		'setting_name': 'interest',
+		'setting_type': 'string',
+		'setting_value': interest.name
+	}
+	new_controlled_vocab_settings = ojs.ControlledVocabEntrySettings(**kwargs)
+	session.add(new_controlled_vocab_settings)
+	session.commit()
+
+
 
 
