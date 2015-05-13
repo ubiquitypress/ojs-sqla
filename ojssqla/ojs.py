@@ -1399,16 +1399,14 @@ t_site_settings = Table(
 )
 
 
-t_static_page_settings = Table(
-    'static_page_settings', metadata,
-    Column('static_page_id', BigInteger, nullable=False, index=True),
-    Column('locale', String(5), nullable=False, server_default=u"''"),
-    Column('setting_name', String(255), nullable=False),
-    Column('setting_value', String),
-    Column('setting_type', String(6), nullable=False),
-    Index('static_page_settings_pkey', 'static_page_id', 'locale', 'setting_name')
-)
+class StaticPageSetting(Base):
+    __tablename__ = 'static_page_settings'
 
+    static_page_id = Column(BigInteger, nullable=False, index=True, primary_key=True)
+    locale = Column(String(5), nullable=False, server_default=u"''", primary_key=True)
+    setting_name = Column(String(255), nullable=False, primary_key=True)
+    setting_value = Column(String)
+    setting_type = Column(String(6), nullable=False)
 
 class StaticPage(Base):
     __tablename__ = 'static_pages'
