@@ -110,20 +110,24 @@ def get_submission_checklist(session):
 	except NoResultFound:
 		return None
 
-def get_article_list(session, filter_checks=None, order_by=None, articles_per_page=25, offset=0):
+def get_article_list(session, filter_checks=None, order_by=None, articles_per_page=25, offset=0, taxonomy=0):
 	order_list = []
-
+	print taxonomy
 	if order_by == 'page_number':
 		order_list.append(desc(ojs.Article.pages))
 	elif order_by == 'section':
 		order_list.append(desc(ojs.Section.seq))
 	else:
 		order_list.append(desc(ojs.PublishedArticle.date_published))
+	filter_taxonomy, join_taxonomy = [], []
+	if taxonomy > 0:
+		filter_taxonomy.append( ojs.TaxonomyArticle.taxonomy_id == taxonomy)
+		join_taxonomy.append(ojs.TaxonomyArticle)
 
 	if not filter_checks:
-		return session.query(ojs.Article).join(ojs.Section).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None).order_by(*order_list).offset(offset).limit(articles_per_page)
+		return session.query(ojs.Article).join(ojs.Section).join(*join_taxonomy).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None, *filter_taxonomy).order_by(*order_list).offset(offset).limit(articles_per_page)
 	else:
-		return session.query(ojs.Article).join(ojs.Section).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None, ojs.Article.section_id.in_(filter_checks)).order_by(*order_list).offset(offset).limit(articles_per_page)
+		return session.query(ojs.Article).join(ojs.Section).join(*join_taxonomy).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None, ojs.Article.section_id.in_(filter_checks), *filter_taxonomy).order_by(*order_list).offset(offset).limit(articles_per_page)
 
 def get_article_count(session):
 	return session.query(func.count(ojs.PublishedArticle.article_id)).filter(ojs.PublishedArticle.date_published != None).one()
