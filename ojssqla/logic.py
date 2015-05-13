@@ -607,6 +607,15 @@ def set_reviewing_interest(session, interest, user):
 	session.add(new_controlled_vocab_settings)
 	session.commit()
 
+def get_static_page(session, page):
+	try:
+		return session.query(ojs.StaticPage).filter(ojs.StaticPage.path == page).one()
+	except NoResultFound:
+		return None
+
+def get_page_settings(session, page_id):
+	return session.query(ojs.StaticPageSetting).filter(ojs.StaticPageSetting.static_page_id == page_id)
+
 
 
 
