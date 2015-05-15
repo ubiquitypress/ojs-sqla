@@ -251,11 +251,14 @@ def get_collection_articles(session, collection_articles):
 	return session.query(ojs.Article).join(ojs.PublishedArticle).filter(ojs.PublishedArticle.published_article_id.in_(article_ids)).order_by(desc(ojs.PublishedArticle.date_published))
 
 def get_collections_from_article(session, article):
-	collections_article = all_as_dict(session.query(ojs.CollectionArticle).filter(ojs.CollectionArticle.published_article_id == article['published_article'].published_article_id))
-	collections = []
-	for collection_article in collections_article:
-		collections.append(as_dict(session.query(ojs.Collection).filter(ojs.Collection.id == collection_article.get('collection_id')).one()))
-	return collections
+	if article.get('published_article'):
+		collections_article = all_as_dict(session.query(ojs.CollectionArticle).filter(ojs.CollectionArticle.published_article_id == article['published_article'].published_article_id))
+		collections = []
+		for collection_article in collections_article:
+			collections.append(as_dict(session.query(ojs.Collection).filter(ojs.Collection.id == collection_article.get('collection_id')).one()))
+		return collections
+	else:
+		return None
 
 def get_latest_announcement(session):
 	try:
