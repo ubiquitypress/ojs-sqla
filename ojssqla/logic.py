@@ -191,7 +191,7 @@ def get_article_file(session, file_id):
 
 def get_article_figure(session, article_id, orig_filename):
 	try:
-		return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.article_id == article_id, ojs.ArticleFile.original_file_name == orig_filename).order_by(desc(ojs.ArticleFile.revision)).one()
+		return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.article_id == article_id, ojs.ArticleFile.original_file_name == orig_filename).order_by(desc(ojs.ArticleFile.revision)).first()
 	except NoResultFound:
 		return None
 		
