@@ -325,13 +325,19 @@ class ArticleGalley(Base):
     galley_id = Column(BigInteger, primary_key=True)
     locale = Column(String(5))
     article_id = Column(BigInteger, ForeignKey(Article.article_id), nullable=False, index=True)
-    file_id = Column(BigInteger, nullable=False)
+    file_id = Column(BigInteger, ForeignKey(ArticleFile.file_id), nullable=False)
     label = Column(String(32))
     html_galley = Column(Integer, nullable=False, server_default=u"'0'")
     style_file_id = Column(BigInteger)
     seq = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
     remote_url = Column(String(255))
-        
+
+    issue = relationship(
+        "ArticleFile",
+        uselist=False,
+        backref="ArticleFile",
+        lazy='joined')
+
 class AuthSource(Base):
     __tablename__ = 'auth_sources'
 

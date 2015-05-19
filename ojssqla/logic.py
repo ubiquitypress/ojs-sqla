@@ -184,7 +184,10 @@ def get_article_galley(session, galley_id):
 		return None
 
 def get_first_html_galley(session, article_id):
-	return session.query(ojs.ArticleGalley).filter(ojs.ArticleGalley.article_id == article_id, ojs.ArticleGalley.html_galley == 1).order_by(ojs.ArticleGalley.seq).first()
+	try:
+		return session.query(ojs.ArticleGalley).join(ojs.ArticleFile).filter(ojs.ArticleGalley.article_id == article_id, ojs.ArticleFile.file_type == 'application/xml').order_by(ojs.ArticleGalley.seq).one()
+	except NoResultFound:
+		return session.query(ojs.ArticleGalley).filter(ojs.ArticleGalley.article_id == article_id, ojs.ArticleGalley.html_galley == 1).order_by(ojs.ArticleGalley.seq).first()
 
 def get_article_file(session, file_id):
 	return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.file_id == file_id).one()
@@ -194,7 +197,7 @@ def get_article_figure(session, article_id, orig_filename):
 		return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.article_id == article_id, ojs.ArticleFile.original_file_name == orig_filename).order_by(desc(ojs.ArticleFile.revision)).first()
 	except NoResultFound:
 		return None
-		
+
 def get_article_sections(session):
 	return session.query(ojs.Section).order_by(ojs.Section.seq)
 
@@ -553,7 +556,7 @@ def add_role_to_user(session, role, user_id):
 
 def set_new_user_details(session, user_id, user_dict, settings_dict):
 	user = session.query(ojs.User).filter(ojs.User.user_id == user_id).one()
-	# update user details 
+	# update user details
 	for k,v, in user_dict.iteritems():
 		setattr(user, k, v)
 		session.flush
@@ -565,7 +568,7 @@ def set_new_user_details(session, user_id, user_dict, settings_dict):
 			setattr(setting, 'setting_value', v )
 			session.flush()
 
-		# or create it:	
+		# or create it:
 		except NoResultFound:
 			kwargs = {
 					'user_id': user_id,
@@ -577,7 +580,7 @@ def set_new_user_details(session, user_id, user_dict, settings_dict):
 				}
 			new_setting = ojs.UserSetting(**kwargs)
 			session.add(new_setting)
-	
+
 	session.commit()
 
 def set_reviewing_interest(session, interest, user):
@@ -618,7 +621,3 @@ def get_static_page(session, page):
 
 def get_page_settings(session, page_id):
 	return session.query(ojs.StaticPageSetting).filter(ojs.StaticPageSetting.static_page_id == page_id)
-
-
-
-
