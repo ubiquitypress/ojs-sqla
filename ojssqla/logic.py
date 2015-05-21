@@ -223,7 +223,7 @@ def get_issue_settings(session, issue_id):
 	return session.query(ojs.IssueSettings).filter(ojs.IssueSettings.issue_id == issue_id)
 
 def get_issue_articles(session, volume_id, issue_id, ojs_id):
-	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id, ojs.Issue.issue_id == ojs_id).order_by(ojs.Article.pages)
+	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id, ojs.Issue.issue_id == ojs_id).order_by(ojs.PublishedArticle.seq)
 
 def get_issue_articles_by_section_id(session, ojs_id, section_id):
 	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.issue_id == ojs_id, ojs.Article.section_id == section_id).order_by(ojs.Article.pages)
