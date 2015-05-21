@@ -185,8 +185,10 @@ def get_article_galley(session, galley_id):
 
 def get_first_html_galley(session, article_id):
 	try:
+		print 'hi'
 		return session.query(ojs.ArticleGalley).join(ojs.ArticleFile).filter(ojs.ArticleGalley.article_id == article_id, ojs.ArticleFile.file_type == 'application/xml').order_by(ojs.ArticleGalley.seq).one()
 	except NoResultFound:
+		print 'hello'
 		return session.query(ojs.ArticleGalley).filter(ojs.ArticleGalley.article_id == article_id, ojs.ArticleGalley.html_galley == 1).order_by(ojs.ArticleGalley.seq).first()
 
 def get_article_file(session, file_id):
@@ -226,7 +228,7 @@ def get_issue_articles(session, volume_id, issue_id, ojs_id):
 	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id, ojs.Issue.issue_id == ojs_id).order_by(ojs.PublishedArticle.seq)
 
 def get_issue_articles_by_section_id(session, ojs_id, section_id):
-	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.issue_id == ojs_id, ojs.Article.section_id == section_id).order_by(ojs.Article.pages)
+	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.issue_id == ojs_id, ojs.Article.section_id == section_id).order_by(ojs.PublishedArticle.seq)
 
 def get_collections(session):
 	return session.query(ojs.Collection).filter(ojs.Collection.disabled == None)
