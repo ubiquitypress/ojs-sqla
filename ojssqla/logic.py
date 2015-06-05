@@ -183,7 +183,7 @@ def get_article_galley(session, galley_id):
 def get_first_html_galley(session, article_id):
 	try:
 		print 'hi'
-		return session.query(ojs.ArticleGalley).join(ojs.ArticleFile).filter(ojs.ArticleGalley.article_id == article_id, ojs.ArticleFile.file_type == 'application/xml').order_by(ojs.ArticleGalley.seq).one()
+		return session.query(ojs.ArticleGalley).join(ojs.ArticleFile).filter(ojs.ArticleGalley.article_id == article_id, ojs.ArticleFile.file_type == 'application/xml').order_by(ojs.ArticleGalley.seq).first()
 	except NoResultFound:
 		print 'hello'
 		return session.query(ojs.ArticleGalley).filter(ojs.ArticleGalley.article_id == article_id, ojs.ArticleGalley.html_galley == 1).order_by(ojs.ArticleGalley.seq).first()
