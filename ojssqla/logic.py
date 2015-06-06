@@ -182,12 +182,10 @@ def get_article_galley(session, galley_id):
 
 def get_first_html_galley(session, article_id):
 	try:
-		print 'hi'
-		return session.query(ojs.ArticleGalley).join(ojs.ArticleFile).filter(ojs.ArticleGalley.article_id == article_id, ojs.ArticleFile.file_type == 'application/xml').order_by(ojs.ArticleGalley.seq).one()
+		return session.query(ojs.ArticleGalley).join(ojs.ArticleFile).filter(ojs.ArticleGalley.article_id == article_id, ojs.ArticleFile.file_type == 'application/xml').order_by(ojs.ArticleGalley.seq).first()
 	except NoResultFound:
-		print 'hello'
-		return session.query(ojs.ArticleGalley).filter(ojs.ArticleGalley.article_id == article_id, ojs.ArticleGalley.html_galley == 1).order_by(ojs.ArticleGalley.seq).first()
-
+		return None
+		
 def get_article_file(session, file_id):
 	return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.file_id == file_id).one()
 
@@ -625,3 +623,6 @@ def get_static_page(session, page):
 
 def get_page_settings(session, page_id):
 	return session.query(ojs.StaticPageSetting).filter(ojs.StaticPageSetting.static_page_id == page_id)
+
+def latest_articles_feed(session):
+	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None).order_by(ojs.PublishedArticle.date_published).limit(10)
