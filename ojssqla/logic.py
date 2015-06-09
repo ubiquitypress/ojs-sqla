@@ -269,6 +269,11 @@ def get_latest_announcement(session):
 def get_announcements(session):
 	return session.query(ojs.Announcement).filter(or_(ojs.Announcement.date_expire >= date.today(), ojs.Announcement.date_expire == None)).order_by(desc(ojs.Announcement.date_posted))
 
+def get_multi_announcements(session, limit):
+
+	print limit
+	return session.query(ojs.Announcement).filter(or_(ojs.Announcement.date_expire >= date.today(), ojs.Announcement.date_expire == None)).order_by(desc(ojs.Announcement.date_posted)).limit(limit)
+
 def get_announcement(session, announcement_id):
 	try:
 		return session.query(ojs.Announcement).filter(ojs.Announcement.announcement_id == announcement_id).one()
