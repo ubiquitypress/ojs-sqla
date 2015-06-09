@@ -156,3 +156,11 @@ def get_edit_assignments(session, article_id):
 
 def get_revi_assignments(session, article_id):
 	return all_as_dict(session.query(ojs.ReviewAssignment).filter(ojs.ReviewAssignment.submission_id == article_id))
+
+def get_issues(session):
+	issues = all_as_dict(session.query(ojs.Issue))
+	for issue in issues:
+	 	issue['title'] = as_dict(session.query(ojs.IssueSettings).filter(ojs.IssueSettings.issue_id == issue.get('issue_id'), ojs.IssueSettings.setting_name == 'title')).get('setting_value')
+	 	issue['description'] = as_dict(session.query(ojs.IssueSettings).filter(ojs.IssueSettings.issue_id == issue.get('issue_id'), ojs.IssueSettings.setting_name == 'description')).get('setting_value')
+	 	issue.pop('journal_id')
+	return issues
