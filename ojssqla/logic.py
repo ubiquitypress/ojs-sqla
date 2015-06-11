@@ -411,6 +411,15 @@ def update_article_revision(session, ojs_article_id, file_id):
 	article.review_file_id = file_id
 	session.commit()
 
+def add_review_Reound(session, ojs_article_id):
+	kwargs = {
+		'submission_id': ojs_article_id,
+		'round': 1,
+		'review_revision': 1,
+	}
+	new_review_round = ojs.ReviewRound(**kwargs)
+	session.commit()
+
 def insert_roles(session, user_id, roles):
 	for role in roles:
 		kwargs = {
