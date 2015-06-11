@@ -571,7 +571,7 @@ class ControlledVocab(Base):
 class CustomIssueOrder(Base):
     __tablename__ = 'custom_issue_orders'
 
-    issue_id = Column(BigInteger, nullable=False, unique=True, primary_key=True)
+    issue_id = Column(ForeignKey('issue.issue_id'), nullable=False, unique=True, primary_key=True)
     journal_id = Column(BigInteger, nullable=False, primary_key=True)
     seq = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
 

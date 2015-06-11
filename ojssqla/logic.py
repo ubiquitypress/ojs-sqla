@@ -3,7 +3,7 @@ import collections
 import hashlib
 
 from sqlalchemy.orm import joinedload,subqueryload, contains_eager
-from sqlalchemy import desc, asc, func, and_, or_
+from sqlalchemy import desc, asc, func, and_, or_, extract
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from datetime import date, timedelta
@@ -160,6 +160,12 @@ def get_article_by_pubid(session, pubid):
 		except NoResultFound:
 			return None
 
+def get_articles_by_year(session, year):
+	return session.query(ojs.Article).join(ojs.PublishedArticle).filter(extract('year', ojs.PublishedArticle.date_published) == year)
+
+def get_issues_by_year(session, year):
+	return session.query(ojs.Issue).filter(extract('year', ojs.Issue.date_published) == year)
+
 def get_all_article_settings(session, article_id):
 	return session.query(ojs.ArticleSetting).filter(ojs.ArticleSetting.article_id == article_id)
 
@@ -209,7 +215,7 @@ def get_section(session, section_id):
 		return None
 
 def get_issues(session):
-	return session.query(ojs.Issue).filter(ojs.Issue.date_published != None, or_(ojs.Issue.access_status == 0, ojs.Issue.access_status == 1, and_(ojs.Issue.access_status == 2, ojs.Issue.open_access_date<=date.today()))).order_by(desc(ojs.Issue.volume), desc(ojs.Issue.number))
+	return session.query(ojs.Issue).join(ojs.CustomIssueOrder, ojs.Issue.issue_id == ojs.CustomIssueOrder.issue_id).filter(ojs.Issue.date_published != None, or_(ojs.Issue.access_status == 0, ojs.Issue.access_status == 1, and_(ojs.Issue.access_status == 2, ojs.Issue.open_access_date<=date.today()))).order_by(asc(ojs.CustomIssueOrder.seq), desc(ojs.Issue.issue_id))
 
 def get_issue(session, volume_id, issue_id, ojs_id):
 	try:
