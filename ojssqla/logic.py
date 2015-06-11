@@ -450,9 +450,9 @@ def get_login_user(session, username, password, unhashed_password):
 
 		# If the user is not found, we move on to try and get the user based on email address, then rehash the password with that username to see if there is a match
 		try:
-			user = get_user_from_email(session, username)
-			password = hash_password(user.username, unhashed_password)
 			if user:
+				user = get_user_from_email(session, username)
+				password = hash_password(user.username, unhashed_password)
 				return session.query(ojs.User).filter(ojs.User.username == user.username, ojs.User.password == password).one()
 			else:
 				return None
