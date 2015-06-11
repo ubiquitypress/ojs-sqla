@@ -1,5 +1,6 @@
 import ojs
 import collections
+import hashlib
 
 from sqlalchemy.orm import joinedload,subqueryload, contains_eager
 from sqlalchemy import desc, asc, func, and_, or_
@@ -185,7 +186,7 @@ def get_first_html_galley(session, article_id):
 		return session.query(ojs.ArticleGalley).join(ojs.ArticleFile).filter(ojs.ArticleGalley.article_id == article_id, ojs.ArticleFile.file_type == 'application/xml').order_by(ojs.ArticleGalley.seq).first()
 	except NoResultFound:
 		return None
-		
+
 def get_article_file(session, file_id):
 	return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.file_id == file_id).one()
 
@@ -430,11 +431,24 @@ def get_user_by_email(session, email):
 	except NoResultFound:
 		return None
 
-def get_login_user(session, username, password):
+def hash_password(username, password):
+	return hashlib.sha1(("%s%s" % (username, password)).encode('utf-8')).hexdigest()
+
+def get_login_user(session, username, password, unhashed_password):
 	try:
 		return session.query(ojs.User).filter(ojs.User.username == username, ojs.User.password == password).one()
 	except NoResultFound:
-		return None
+
+		# If the user is not found, we move on to try and get the user based on email address, then rehash the password with that username to see if there is a match
+		try:
+			user = get_user_from_email(session, username)
+			password = hash_password(user.username, unhashed_password)
+			if user:
+				return session.query(ojs.User).filter(ojs.User.username == user.username, ojs.User.password == password).one()
+			else:
+				return None
+		except NoResultFound:
+			return None
 
 def set_password(session, user_id, password):
 	user = session.query(ojs.User).filter(ojs.User.user_id == user_id).one()
