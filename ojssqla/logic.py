@@ -440,6 +440,12 @@ def insert_roles(session, user_id, roles):
 	session.commit()
 	return True
 
+def remove_role_from_user(session, user_id, role_id):
+	role = get_role(session, user_id, role_id)
+	session.delete(role)
+	session.commit()
+	return True
+
 def get_user_by_email(session, email):
 	try:
 		return session.query(ojs.User).filter(ojs.User.email == email).one()
