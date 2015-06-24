@@ -90,8 +90,9 @@ def get_section_policies(session):
 	sections = session.query(ojs.SectionSettings).join(ojs.Section).filter(ojs.SectionSettings.setting_name == 'title', ojs.Section.hide_about == 0).order_by(ojs.Section.seq)
 
 	for s in sections:
+		policy = session.query(ojs.SectionSettings).filter(ojs.SectionSettings.setting_name == 'policy', ojs.SectionSettings.section_id == s.section_id).first()
 		section = as_dict(session.query(ojs.Section).filter(ojs.Section.section_id == s.section_id).one())
-		section_dict[s.setting_value] = {'restricted' : section['editor_restricted'], 'indexed': section['meta_indexed'], 'reviews': section['meta_reviewed'] }
+		section_dict[s.setting_value] = {'restricted' : section['editor_restricted'], 'indexed': section['meta_indexed'], 'reviews': section['meta_reviewed'], 'policy': policy.setting_value}
 
 	return section_dict
 
@@ -122,7 +123,7 @@ def get_article_list(session, filter_checks=None, order_by=None, articles_per_pa
 		order_list.append(desc(ojs.PublishedArticle.date_published))
 	filter_taxonomy, join_taxonomy = [], []
 	if taxonomy > 0:
-		filter_taxonomy.append( ojs.TaxonomyArticle.taxonomy_id == taxonomy)
+		filter_taxonomy.append(ojs.TaxonomyArticle.taxonomy_id == taxonomy)
 		join_taxonomy.append(ojs.TaxonomyArticle)
 
 	if not filter_checks:
@@ -135,25 +136,25 @@ def get_article_count(session):
 
 def get_article(session, doi):
 	try:
-		return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.ArticleSetting.setting_name == 'pub-id::doi', ojs.ArticleSetting.setting_value == doi).one()
+		return session.query(ojs.Article).join(ojs.ArticleSetting).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.ArticleSetting.setting_name == 'pub-id::doi', ojs.ArticleSetting.setting_value == doi, ojs.Issue.date_published != None).one()
 	except NoResultFound:
 		try:
-			return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.ArticleSetting.setting_name == 'pub-id::publisher-id', ojs.ArticleSetting.setting_value == doi).one()
+			return session.query(ojs.Article).join(ojs.ArticleSetting).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.ArticleSetting.setting_name == 'pub-id::publisher-id', ojs.ArticleSetting.setting_value == doi, ojs.Issue.date_published != None).one()
 		except NoResultFound:
 			return None
 
 def get_article_by_id(session, doi):
 	try:
-		return session.query(ojs.Article).filter(ojs.Article.article_id == doi).one()
+		return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.Article.article_id == doi).one()
 	except NoResultFound:
 		try:
-			return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.ArticleSetting.setting_name == 'pub-id::publisher-id', ojs.ArticleSetting.setting_value == doi).one()
+			return session.query(ojs.Article).join(ojs.ArticleSetting).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.ArticleSetting.setting_name == 'pub-id::publisher-id', ojs.ArticleSetting.setting_value == doi, ojs.Issue.date_published != None).one()
 		except NoResultFound:
 			return None
 
 def get_article_by_pubid(session, pubid):
 	try:
-		return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.ArticleSetting.setting_name == 'pub-id::publisher-id', ojs.ArticleSetting.setting_value == pubid).one()
+		return session.query(ojs.Article).join(ojs.ArticleSetting).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.ArticleSetting.setting_name == 'pub-id::publisher-id', ojs.ArticleSetting.setting_value == pubid, ojs.Issue.date_published != None).one()
 	except NoResultFound:
 		try:
 			return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.Article.article_id == pubid).one()
