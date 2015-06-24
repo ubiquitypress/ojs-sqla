@@ -290,6 +290,13 @@ def get_announcement(session, announcement_id):
 def get_announcement_settings(session, announcement_id):
 	return session.query(ojs.AnnouncementSettings).filter(ojs.AnnouncementSettings.announcement_id == announcement_id)
 
+def get_announcement_type_settings(session, type_id):
+	try:
+		return session.query(ojs.AnnouncementTypeSettings).filter(ojs.AnnouncementTypeSettings.type_id == type_id)
+	except NoResultFound:
+		return None
+
+
 def transfer_user(session, ojs_user_dict, ojs_user_settings_dict):
 	new_obj = ojs.User(**ojs_user_dict)
 	session.add(new_obj)
