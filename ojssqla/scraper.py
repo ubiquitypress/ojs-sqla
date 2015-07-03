@@ -62,7 +62,7 @@ def get_user_bio(session, user_id):
 
 def get_user_affiliation(session, user_id):
 	try:
-		user_affiliation = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'affiliation').one())
+		user_affiliation = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'affiliation').first())
 		return user_affiliation.get('setting_value', None)
 	except NoResultFound:
 		return None
