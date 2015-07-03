@@ -55,7 +55,7 @@ def deltadate(days, start_date=None):
 
 def get_user_bio(session, user_id):
 	try:
-		user_bio = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'biography').one())
+		user_bio = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'biography').first())
 		return user_bio.get('setting_value', None)
 	except NoResultFound:
 		return None
