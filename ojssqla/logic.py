@@ -669,3 +669,12 @@ def get_page_settings(session, page_id):
 
 def latest_articles_feed(session):
 	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None).order_by(ojs.PublishedArticle.date_published).limit(10)
+
+def get_any_article(session, article_id):
+	return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.Article.article_id == article_id).one()
+
+def get_file_from_ojs_name(session, article_id, ojs_file_name):
+	return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.article_id == article_id, ojs.file_name == ojs_file_name).one()
+
+
+	
