@@ -674,7 +674,6 @@ def get_any_article(session, article_id):
 	return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.Article.article_id == article_id).one()
 
 def get_file_from_ojs_name(session, article_id, ojs_file_name):
-	return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.article_id == article_id, ojs.file_name == ojs_file_name).one()
+	return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.article_id == article_id, ojs.ArticleFile.file_name == ojs_file_name).one()
 
 
-	
