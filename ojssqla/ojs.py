@@ -295,6 +295,12 @@ class Issue(Base):
     original_style_file_name = Column(String(255))
     last_modified = Column(DateTime)
 
+    galleys = relationship(
+        "IssueGalley",
+        backref="Issue",
+        lazy='joined',
+        order_by="IssueGalley.seq")
+
 
 class PublishedArticle(Base):
     __tablename__ = 'published_articles'
@@ -914,7 +920,7 @@ class IssueGalley(Base):
 
     galley_id = Column(BigInteger, primary_key=True)
     locale = Column(String(5))
-    issue_id = Column(BigInteger, nullable=False, index=True)
+    issue_id = Column(BigInteger, ForeignKey(Issue.issue_id), nullable=False, index=True)
     file_id = Column(BigInteger, nullable=False)
     label = Column(String(32))
     seq = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
