@@ -679,6 +679,9 @@ def get_any_article(session, article_id):
 def get_file_from_ojs_name(session, article_id, ojs_file_name):
 	return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.article_id == article_id, ojs.ArticleFile.file_name == ojs_file_name).one()
 
+def get_supp_file_settings(session, file_id):
+	return session.query(ojs.ArticleSuppFileSettings).join(ojs.ArticleSupplementaryFile).filter(ojs.ArticleSupplementaryFile.file_id == file_id)
+
 def get_handling_editors(session, article_id):
 	users = all_as_dict(session.query(ojs.User).join(ojs.EditAssignment).filter(ojs.EditAssignment.article_id == article_id))
 	for user in users:
