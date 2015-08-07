@@ -36,7 +36,10 @@ def dict_ojs_settings_results(settings_results):
 	results_dict = {}
 
 	for row in settings_results:
-		results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = row.setting_value
+		if row.setting_type == 'object' and setting_name == 'pub-id::doi':
+			results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = loads(row.setting_value).get('en_US')
+		else:
+			results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = row.setting_value
 
 	return results_dict
 
