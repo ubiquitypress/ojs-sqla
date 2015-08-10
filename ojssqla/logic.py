@@ -36,7 +36,7 @@ def dict_ojs_settings_results(settings_results):
 	results_dict = {}
 
 	for row in settings_results:
-		if row.setting_type == 'object' and setting_name == 'pub-id::doi':
+		if row.setting_type == 'object' and row.setting_name == 'pub-id::doi':
 			results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = loads(row.setting_value).get('en_US')
 		else:
 			results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = row.setting_value
@@ -237,7 +237,10 @@ def get_issue_articles_by_section_id(session, ojs_id, section_id):
 	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.issue_id == ojs_id, ojs.Article.section_id == section_id).order_by(ojs.PublishedArticle.seq)
 
 def get_issue_file(session, issue_id, file_id):
-	return session.query(ojs.IssueFile).filter(ojs.IssueFile.issue_id == issue_id, ojs.IssueFile.file_id == file_id).one()
+	try:
+		return session.query(ojs.IssueFile).filter(ojs.IssueFile.issue_id == issue_id, ojs.IssueFile.file_id == file_id).one()
+	except NoResultFound:
+		return None
 
 def get_collections(session):
 	return session.query(ojs.Collection).filter(ojs.Collection.disabled == None)
