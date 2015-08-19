@@ -181,16 +181,6 @@ class ArticleSearchObject(Base):
     type = Column(Integer, nullable=False)
     assoc_id = Column(BigInteger)
 
-t_article_supp_file_settings = Table(
-    'article_supp_file_settings', metadata,
-    Column('supp_id', BigInteger, nullable=False, index=True),
-    Column('locale', String(5), nullable=False, server_default=u"''"),
-    Column('setting_name', String(255), nullable=False),
-    Column('setting_value', Text),
-    Column('setting_type', String(6), nullable=False),
-    Index('article_supp_file_settings_pkey', 'supp_id', 'locale', 'setting_name'),
-    Index('article_supp_file_settings_name_value', 'setting_name', 'setting_value')
-)
 
 
 class ArticleSupplementaryFile(Base):
@@ -206,6 +196,22 @@ class ArticleSupplementaryFile(Base):
     show_reviewers = Column(Integer, server_default=u"'0'")
     date_submitted = Column(DateTime, nullable=False)
     seq = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
+
+    settings = relationship(
+        "ArticleSuppFileSettings",
+        backref="ArticleSupplementaryFile",
+        lazy='joined')
+
+class ArticleSuppFileSettings(Base):
+
+    __tablename__ = 'article_supp_file_settings'
+
+    supp_id = Column(BigInteger, ForeignKey(ArticleSupplementaryFile.supp_id), nullable=False, primary_key=True)
+    locale = Column(String(5), nullable=False, server_default=u"''", primary_key=True)
+    setting_name = Column(String(255), nullable=False, primary_key=True)
+    setting_value = Column(Text)
+    setting_type = Column(String(6), nullable=False)
+
 
 
 class ArticleXmlGalley(Base):

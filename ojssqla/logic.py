@@ -36,7 +36,10 @@ def dict_ojs_settings_results(settings_results):
 	results_dict = {}
 
 	for row in settings_results:
-		results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = row.setting_value
+		if row.setting_type == 'object' and row.setting_name == 'pub-id::doi':
+			results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = loads(row.setting_value).get('en_US')
+		else:
+			results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = row.setting_value
 
 	return results_dict
 
@@ -234,7 +237,10 @@ def get_issue_articles_by_section_id(session, ojs_id, section_id):
 	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.issue_id == ojs_id, ojs.Article.section_id == section_id).order_by(ojs.PublishedArticle.seq)
 
 def get_issue_file(session, issue_id, file_id):
-	return session.query(ojs.IssueFile).filter(ojs.IssueFile.issue_id == issue_id, ojs.IssueFile.file_id == file_id).one()
+	try:
+		return session.query(ojs.IssueFile).filter(ojs.IssueFile.issue_id == issue_id, ojs.IssueFile.file_id == file_id).one()
+	except NoResultFound:
+		return None
 
 def get_collections(session):
 	return session.query(ojs.Collection).filter(ojs.Collection.disabled == None)
@@ -678,6 +684,9 @@ def get_any_article(session, article_id):
 
 def get_file_from_ojs_name(session, article_id, ojs_file_name):
 	return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.article_id == article_id, ojs.ArticleFile.file_name == ojs_file_name).one()
+
+def get_supp_file_settings(session, file_id):
+	return session.query(ojs.ArticleSuppFileSettings).join(ojs.ArticleSupplementaryFile).filter(ojs.ArticleSupplementaryFile.file_id == file_id)
 
 def get_handling_editors(session, article_id):
 	users = all_as_dict(session.query(ojs.User).join(ojs.EditAssignment).filter(ojs.EditAssignment.article_id == article_id))
