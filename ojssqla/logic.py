@@ -99,9 +99,11 @@ def get_section_policies(session):
 
 	return section_dict
 
-def get_journal_setting(session, setting_name):
+def get_journal_setting(session, setting_name, locale=None):
 	try:
-		return session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == setting_name).one()
+		return session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == setting_name, ojs.JournalSetting.locale == locale).one()
+	except NoResultFound:
+		return session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == setting_name, ojs.JournalSetting.locale == 'en_US').one()
 	except NoResultFound:
 		return None
 
