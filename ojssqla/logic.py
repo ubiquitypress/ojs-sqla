@@ -177,7 +177,7 @@ def get_article_settings(session, article_id, setting_name):
 	return session.query(ojs.ArticleSetting).filter(ojs.ArticleSetting.article_id == article_id, ojs.ArticleSetting.setting_name == setting_name).one()
 
 def get_latest_articles(session, limit):
-	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None).order_by(ojs.PublishedArticle.date_published.desc()).limit(limit)
+	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None).order_by(ojs.PublishedArticle.date_published.desc(), ojs.PublishedArticle.seq.desc()).limit(limit)
 
 def get_popular_articles(session, limit):
 	return session.query(ojs.Article).join(ojs.PublishedArticle).order_by(ojs.PublishedArticle.date_published.desc()).limit(limit)
