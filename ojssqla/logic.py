@@ -227,6 +227,12 @@ def get_issue(session, volume_id, issue_id, ojs_id):
 	except NoResultFound:
 		return None
 
+def get_issue_preview(session, ojs_id):
+	try:
+		return session.query(ojs.Issue).filter(ojs.Issue.issue_id == ojs_id).one()
+	except NoResultFound:
+		return None
+
 def get_issue_settings(session, issue_id):
 	return session.query(ojs.IssueSettings).filter(ojs.IssueSettings.issue_id == issue_id)
 
@@ -235,6 +241,10 @@ def get_issue_articles(session, volume_id, issue_id, ojs_id):
 
 def get_issue_articles_by_section_id(session, ojs_id, section_id):
 	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.issue_id == ojs_id, ojs.Article.section_id == section_id).order_by(ojs.PublishedArticle.seq)
+
+def get_issue_preview_articles_by_section_id(session, ojs_id, section_id):
+	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.Issue.issue_id == ojs_id, ojs.Article.section_id == section_id).order_by(ojs.PublishedArticle.seq)
+
 
 def get_issue_file(session, issue_id, file_id):
 	try:
