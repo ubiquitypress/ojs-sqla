@@ -67,6 +67,13 @@ def editorial_team(session):
 
 	return group_dict
 
+def get_serialized_setting(session, setting_name):
+	try:
+		serial = session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == setting_name).one()
+		return loads(serial[0], array_hook=collections.OrderedDict)
+	except NoResultFound:
+		return None
+
 def get_user_affiliation(session, user_id):
 	try:
 		user_affiliation = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'affiliation').first())
