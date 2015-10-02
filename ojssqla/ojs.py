@@ -279,6 +279,11 @@ class Article(Base):
         backref="Article",
         lazy='joined')
 
+    decisions = relationship(
+        "EditDecision",
+        backref="Article",
+        lazy="joined")
+
 class Issue(Base):
     __tablename__ = 'issues'
 
@@ -652,7 +657,7 @@ class EditDecision(Base):
     __tablename__ = 'edit_decisions'
 
     edit_decision_id = Column(BigInteger, primary_key=True)
-    article_id = Column(BigInteger, nullable=False, index=True)
+    article_id = Column(BigInteger, ForeignKey(Article.article_id), nullable=False, unique=True)
     round = Column(Integer, nullable=False)
     editor_id = Column(BigInteger, nullable=False, index=True)
     decision = Column(Integer, nullable=False)
@@ -753,14 +758,16 @@ class EventLog(Base):
     is_translated = Column(Integer)
 
 
-t_event_log_settings = Table(
-    'event_log_settings', metadata,
-    Column('log_id', BigInteger, nullable=False, index=True),
-    Column('setting_name', String(255), nullable=False),
-    Column('setting_value', Text),
-    Column('setting_type', String(6), nullable=False),
-    Index('event_log_settings_pkey', 'log_id', 'setting_name')
-)
+class EventLogSettings(Base):
+    __tablename__ = 'event_log_settings'
+    __table_args__ = (
+        Index('log_id', 'setting_name'),
+    )
+
+    log_id = Column(BigInteger, nullable=False, primary_key=True)
+    setting_name = Column(String(255), nullable=False, primary_key=True)
+    setting_value = Column(Text)
+    setting_type = Column(String(6), nullable=False)
 
 
 t_external_feed_settings = Table(
@@ -1167,7 +1174,7 @@ class ReviewAssignment(Base):
 
     review_id = Column(BigInteger, primary_key=True)
     submission_id = Column(BigInteger, nullable=False, index=True)
-    reviewer_id = Column(BigInteger, nullable=False, index=True)
+    reviewer_id = Column(ForeignKey('users.user_id'), nullable=False, index=True, primary_key=True)
     competing_interests = Column(Text)
     regret_message = Column(Text)
     recommendation = Column(Integer)
@@ -1195,16 +1202,25 @@ class ReviewAssignment(Base):
     stage_id = Column(Integer, nullable=False, server_default=u"'1'")
     unconsidered = Column(Integer)
 
+    reviewer = relationship(
+        "User",
+        primaryjoin='ReviewAssignment.reviewer_id == User.user_id',
+        uselist=False,
+        lazy='joined')
 
-t_review_form_element_settings = Table(
-    'review_form_element_settings', metadata,
-    Column('review_form_element_id', BigInteger, nullable=False, index=True),
-    Column('locale', String(5), nullable=False, server_default=u"''"),
-    Column('setting_name', String(255), nullable=False),
-    Column('setting_value', Text),
-    Column('setting_type', String(6), nullable=False),
-    Index('review_form_element_settings_pkey', 'review_form_element_id', 'locale', 'setting_name')
-)
+
+class ReviewFormElementSettings(Base):
+    __tablename__ = 'review_form_element_settings'
+    __table_args__ = (
+        Index('review_form_element_settings_pkey', 'review_form_element_id', 'locale', 'setting_name'),
+    )
+
+    review_form_element_id = Column(BigInteger, nullable=False, index=True, primary_key=True)
+    locale = Column(String(5), nullable=False, server_default=u"''", primary_key=True)
+    setting_name = Column(String(255), nullable=False, primary_key=True)
+    setting_value = Column(Text)
+    setting_type = Column(String(6), nullable=False)
+   
 
 
 class ReviewFormElement(Base):
@@ -1218,26 +1234,34 @@ class ReviewFormElement(Base):
     included = Column(Integer)
 
 
-t_review_form_responses = Table(
-    'review_form_responses', metadata,
-    Column('review_form_element_id', BigInteger, nullable=False),
-    Column('review_id', BigInteger, nullable=False),
-    Column('response_type', String(6)),
-    Column('response_value', Text),
-    Index('review_form_responses_pkey', 'review_form_element_id', 'review_id')
-)
+class ReviewFormResponses(Base):
+    __tablename__ = 'review_form_responses'
+    __table_args__ = (
+       Index('review_form_responses_pkey', 'review_form_element_id', 'review_id'),
+    )
+
+    review_form_element_id = Column(ForeignKey('review_form_elements.review_form_element_id'), nullable=False, primary_key=True)
+    review_id = Column(BigInteger, nullable=False, primary_key=True)
+    response_type = Column(String(6))
+    response_value = Column(Text)
+
+    element = relationship(
+        "ReviewFormElement",
+        primaryjoin='ReviewFormResponses.review_form_element_id == ReviewFormElement.review_form_element_id',
+        uselist=False,
+        lazy='joined')
 
 
-t_review_form_settings = Table(
-    'review_form_settings', metadata,
-    Column('review_form_id', BigInteger, nullable=False, index=True),
-    Column('locale', String(5), nullable=False, server_default=u"''"),
-    Column('setting_name', String(255), nullable=False),
-    Column('setting_value', Text),
-    Column('setting_type', String(6), nullable=False),
-    Index('review_form_settings_pkey', 'review_form_id', 'locale', 'setting_name')
-)
-
+class ReviewFormSettings(Base):
+    __tablename__ = 'review_form_settings'
+    __table_args__ = (
+       Index('review_form_settings_pkey', 'review_form_id', 'locale', 'setting_name'),
+    )
+    review_form_id = Column(BigInteger, nullable=False, index=True, primary_key=True)
+    locale =  Column(String(5), nullable=False, server_default=u"''", primary_key=True)
+    setting_name = Column(String(255), nullable=False, primary_key=True)
+    setting_value = Column(Text)
+    setting_type = Column(String(6), nullable=False)
 
 class ReviewForm(Base):
     __tablename__ = 'review_forms'
@@ -1658,4 +1682,7 @@ class TaxonomyArticle(Base):
     taxonomy_id = Column(ForeignKey('taxonomy.id'), nullable=False)
     article_id = Column(ForeignKey('articles.article_id'), nullable=False)
 
-    taxonomy = relationship(u'Taxonomy')
+    taxonomy = relationship(
+        "Taxonomy",
+        backref="taxonomy_id",
+        lazy='joined')

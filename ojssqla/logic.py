@@ -710,3 +710,42 @@ def get_handling_editors(session, article_id):
 	for user in users:
 		user['settings'] = get_user_settings_dict(session, user.get('user_id'))
 	return users
+
+def get_event_log_setting(session, log_id):
+	return dict_ojs_settings_results(session.query(ojs.EventLogSettings).filter(ojs.EventLogSettings.log_id == log_id))
+
+def get_log_entries(session, article_id, log_type):
+	entries = all_as_dict(session.query(ojs.EventLog).filter(ojs.EventLog.assoc_id == article_id, ojs.EventLog.message == log_type).order_by(ojs.EventLog.date_logged))
+	for entry in entries:
+		entry['settings'] = get_event_log_setting(session, entry.get('log_id'))
+	return entries
+
+def get_review_field_name(session, element_id):
+	return dict_ojs_settings_results(session.query(ojs.ReviewFormElementSettings).filter(ojs.ReviewFormElementSettings.setting_name == 'question', ojs.ReviewFormElementSettings.review_form_element_id == element_id))
+
+def get_possible_answers(session, element_id):
+	try:
+		responses = session.query(ojs.ReviewFormElementSettings.setting_value).filter(ojs.ReviewFormElementSettings.setting_name == 'possibleResponses', ojs.ReviewFormElementSettings.review_form_element_id == element_id).one()
+		return loads(responses[0])
+	except NoResultFound:
+		return None
+
+def get_review_responses(session, review_id):
+	review_responses = all_as_dict(session.query(ojs.ReviewFormResponses).filter(ojs.ReviewFormResponses.review_id == review_id))
+
+	for response in review_responses:
+		response['field_name'] = get_review_field_name(session, response['review_form_element_id'])
+		response['possible_answers'] = get_possible_answers(session, response['review_form_element_id'])
+	return review_responses
+
+def get_review_details(session, article_id):
+	review_assignments = all_as_dict(session.query(ojs.ReviewAssignment).filter(ojs.ReviewAssignment.submission_id == article_id).order_by(ojs.ReviewAssignment.round, ojs.ReviewAssignment.date_assigned))
+	for assignment in review_assignments:
+		assignment['reviewer_settings'] = get_user_settings_dict(session, assignment.get('reviewer').user_id)
+		assignment['form_answers'] = get_review_responses(session, assignment.get('review_id'))
+
+	return review_assignments
+
+def get_article_comments(session, article_id):
+	return all_as_dict(session.query(ojs.ArticleComment).filter(ojs.ArticleComment.article_id == article_id))
+
