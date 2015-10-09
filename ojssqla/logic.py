@@ -103,12 +103,13 @@ def get_journal_setting(session, setting_name, locale=None):
 	try:
 		return session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == setting_name, ojs.JournalSetting.locale == locale).one()
 	except NoResultFound:
-		return session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == setting_name, ojs.JournalSetting.locale == 'en_US').one()
-	except NoResultFound:
-		return None
+		try:
+			return session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == setting_name, ojs.JournalSetting.locale == 'en_US').one()
+		except NoResultFound:
+			return None
 
-def ojs_journal_settings(session):
-	return session.query(ojs.JournalSetting)
+def ojs_journal_settings(session, locale=None):
+	return session.query(ojs.JournalSetting).filter(ojs.JournalSetting.locale == locale)
 
 def get_submission_checklist(session):
 	try:
