@@ -81,21 +81,22 @@ def get_user_bio(session, user_id):
 	except NoResultFound:
 		return None
 
-def get_additional_policies(session):
+def get_additional_policies(session, locale=None):
 	try:
-		serial = session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'customAboutItems').one()
+		serial = session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'customAboutItems', ojs.JournalSetting.locale == locale).one()
 		return loads(serial[0], array_hook=collections.OrderedDict)
 	except NoResultFound:
 		return None
 
-def get_section_policies(session):
+def get_section_policies(session, locale=None):
 	section_dict = collections.OrderedDict()
 	sections = session.query(ojs.SectionSettings).join(ojs.Section).filter(ojs.SectionSettings.setting_name == 'title', ojs.Section.hide_about == 0).order_by(ojs.Section.seq)
 
 	for s in sections:
-		policy = session.query(ojs.SectionSettings).filter(ojs.SectionSettings.setting_name == 'policy', ojs.SectionSettings.section_id == s.section_id).first()
+		policy = session.query(ojs.SectionSettings).filter(ojs.SectionSettings.setting_name == 'policy', ojs.SectionSettings.section_id == s.section_id, ojs.SectionSettings.locale == locale).first()
 		section = as_dict(session.query(ojs.Section).filter(ojs.Section.section_id == s.section_id).one())
-		section_dict[s.setting_value] = {'restricted' : section['editor_restricted'], 'indexed': section['meta_indexed'], 'reviews': section['meta_reviewed'], 'policy': policy.setting_value}
+		if policy:
+			section_dict[s.setting_value] = {'restricted' : section['editor_restricted'], 'indexed': section['meta_indexed'], 'reviews': section['meta_reviewed'], 'policy': policy.setting_value}
 
 	return section_dict
 
@@ -111,9 +112,9 @@ def get_journal_setting(session, setting_name, locale=None):
 def ojs_journal_settings(session, locale=None):
 	return session.query(ojs.JournalSetting).filter(ojs.JournalSetting.locale == locale)
 
-def get_submission_checklist(session):
+def get_submission_checklist(session, locale):
 	try:
-		checklist = session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'submissionChecklist').one()
+		checklist = session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'submissionChecklist', ojs.JournalSetting.locale == locale).one()
 		return loads(checklist[0], array_hook=collections.OrderedDict)
 	except NoResultFound:
 		return None
