@@ -102,7 +102,7 @@ def get_section_policies(session):
 	for s in sections:
 		policy = session.query(ojs.SectionSettings).filter(ojs.SectionSettings.setting_name == 'policy', ojs.SectionSettings.section_id == s.section_id).first()
 		section = as_dict(session.query(ojs.Section).filter(ojs.Section.section_id == s.section_id).one())
-		section_dict[s.setting_value] = {'restricted' : section['editor_restricted'], 'indexed': section['meta_indexed'], 'reviews': section['meta_reviewed'], 'policy': policy.setting_value}
+		section_dict[s.setting_value] = {'restricted' : section['editor_restricted'], 'indexed': section['meta_indexed'], 'reviews': section['meta_reviewed'], 'policy': policy.setting_value if policy else ''}
 
 	return section_dict
 
