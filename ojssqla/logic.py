@@ -205,7 +205,10 @@ def get_first_html_galley(session, article_id):
 		return None
 
 def get_article_file(session, file_id):
-	return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.file_id == file_id).one()
+	try:
+		return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.file_id == file_id).one()
+	except NoResultFound:
+		return None
 
 def get_article_figure(session, article_id, orig_filename):
 	try:
