@@ -99,15 +99,19 @@ def ojs_journal_settings(session):
 	return dict_ojs_settings_results(session.query(ojs.JournalSetting).filter(not_(ojs.JournalSetting.setting_name.contains('::'))))
 
 def get_journal_users(session):
-	users = all_as_dict(session.query(ojs.User).join(ojs.Roles))
+	users = all_as_dict(session.query(ojs.User))
 
 	for user in users:
 		user['settings'] = get_user_settings(session, user['user_id'])
+		user['roles'] = get_user_roles(session, user['user_id'])
 
 	return users
 
 def get_user_settings(session, user_id):
 	return dict_ojs_settings_results(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id))
+
+def get_user_roles(session, user_id):
+	return all_as_dict(session.query(ojs.Roles).filter(ojs.Roles.user_id == user_id))
 
 def get_article_events(session, assoc_id):
 	return all_as_dict(session.query(ojs.EventLog).filter(ojs.EventLog.assoc_id == assoc_id, ojs.EventLog.assoc_type == 257))

@@ -67,6 +67,13 @@ def editorial_team(session):
 
 	return group_dict
 
+def get_serialized_setting(session, setting_name):
+	try:
+		serial = session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == setting_name).one()
+		return loads(serial[0], array_hook=collections.OrderedDict)
+	except NoResultFound:
+		return None
+
 def get_user_affiliation(session, user_id):
 	try:
 		user_affiliation = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'affiliation').first())
@@ -139,7 +146,7 @@ def get_article_list(session, filter_checks=None, order_by=None, articles_per_pa
 		return session.query(ojs.Article).join(ojs.Section).join(*join_taxonomy).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None, ojs.Article.section_id.in_(filter_checks), *filter_taxonomy).order_by(*order_list).offset(offset).limit(articles_per_page)
 
 def get_article_count(session):
-	return session.query(func.count(ojs.PublishedArticle.article_id)).filter(ojs.PublishedArticle.date_published != None).one()
+	return session.query(func.count(ojs.Article.article_id)).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None).one()
 
 def get_article(session, doi):
 	try:
@@ -181,7 +188,7 @@ def get_article_settings(session, article_id, setting_name):
 	return session.query(ojs.ArticleSetting).filter(ojs.ArticleSetting.article_id == article_id, ojs.ArticleSetting.setting_name == setting_name).one()
 
 def get_latest_articles(session, limit):
-	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None).order_by(ojs.PublishedArticle.date_published.desc()).limit(limit)
+	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None).order_by(ojs.PublishedArticle.date_published.desc(), ojs.PublishedArticle.seq.desc()).limit(limit)
 
 def get_popular_articles(session, limit):
 	return session.query(ojs.Article).join(ojs.PublishedArticle).order_by(ojs.PublishedArticle.date_published.desc()).limit(limit)
@@ -202,7 +209,10 @@ def get_first_html_galley(session, article_id):
 		return None
 
 def get_article_file(session, file_id):
-	return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.file_id == file_id).one()
+	try:
+		return session.query(ojs.ArticleFile).filter(ojs.ArticleFile.file_id == file_id).one()
+	except NoResultFound:
+		return None
 
 def get_article_figure(session, article_id, orig_filename):
 	try:
@@ -231,6 +241,12 @@ def get_issue(session, volume_id, issue_id, ojs_id):
 	except NoResultFound:
 		return None
 
+def get_issue_preview(session, ojs_id):
+	try:
+		return session.query(ojs.Issue).filter(ojs.Issue.issue_id == ojs_id).one()
+	except NoResultFound:
+		return None
+
 def get_issue_settings(session, issue_id):
 	return session.query(ojs.IssueSettings).filter(ojs.IssueSettings.issue_id == issue_id)
 
@@ -239,6 +255,10 @@ def get_issue_articles(session, volume_id, issue_id, ojs_id):
 
 def get_issue_articles_by_section_id(session, ojs_id, section_id):
 	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.issue_id == ojs_id, ojs.Article.section_id == section_id).order_by(ojs.PublishedArticle.seq)
+
+def get_issue_preview_articles_by_section_id(session, ojs_id, section_id):
+	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.Issue.issue_id == ojs_id, ojs.Article.section_id == section_id).order_by(ojs.PublishedArticle.seq)
+
 
 def get_issue_file(session, issue_id, file_id):
 	try:
@@ -681,7 +701,7 @@ def get_page_settings(session, page_id):
 	return session.query(ojs.StaticPageSetting).filter(ojs.StaticPageSetting.static_page_id == page_id)
 
 def latest_articles_feed(session):
-	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None).order_by(ojs.PublishedArticle.date_published).limit(10)
+	return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.PublishedArticle.date_published != None, ojs.Issue.date_published != None).order_by(desc(ojs.PublishedArticle.date_published)).limit(10)
 
 def get_any_article(session, article_id):
 	return session.query(ojs.Article).join(ojs.ArticleSetting).filter(ojs.Article.article_id == article_id).one()
@@ -697,3 +717,42 @@ def get_handling_editors(session, article_id):
 	for user in users:
 		user['settings'] = get_user_settings_dict(session, user.get('user_id'))
 	return users
+
+def get_event_log_setting(session, log_id):
+	return dict_ojs_settings_results(session.query(ojs.EventLogSettings).filter(ojs.EventLogSettings.log_id == log_id))
+
+def get_log_entries(session, article_id, log_type):
+	entries = all_as_dict(session.query(ojs.EventLog).filter(ojs.EventLog.assoc_id == article_id, ojs.EventLog.message == log_type).order_by(ojs.EventLog.date_logged))
+	for entry in entries:
+		entry['settings'] = get_event_log_setting(session, entry.get('log_id'))
+	return entries
+
+def get_review_field_name(session, element_id):
+	return dict_ojs_settings_results(session.query(ojs.ReviewFormElementSettings).filter(ojs.ReviewFormElementSettings.setting_name == 'question', ojs.ReviewFormElementSettings.review_form_element_id == element_id))
+
+def get_possible_answers(session, element_id):
+	try:
+		responses = session.query(ojs.ReviewFormElementSettings.setting_value).filter(ojs.ReviewFormElementSettings.setting_name == 'possibleResponses', ojs.ReviewFormElementSettings.review_form_element_id == element_id).one()
+		return loads(responses[0])
+	except NoResultFound:
+		return None
+
+def get_review_responses(session, review_id):
+	review_responses = all_as_dict(session.query(ojs.ReviewFormResponses).filter(ojs.ReviewFormResponses.review_id == review_id))
+
+	for response in review_responses:
+		response['field_name'] = get_review_field_name(session, response['review_form_element_id'])
+		response['possible_answers'] = get_possible_answers(session, response['review_form_element_id'])
+	return review_responses
+
+def get_review_details(session, article_id):
+	review_assignments = all_as_dict(session.query(ojs.ReviewAssignment).filter(ojs.ReviewAssignment.submission_id == article_id).order_by(ojs.ReviewAssignment.round, ojs.ReviewAssignment.date_assigned))
+	for assignment in review_assignments:
+		assignment['reviewer_settings'] = get_user_settings_dict(session, assignment.get('reviewer').user_id)
+		assignment['form_answers'] = get_review_responses(session, assignment.get('review_id'))
+
+	return review_assignments
+
+def get_article_comments(session, article_id):
+	return all_as_dict(session.query(ojs.ArticleComment).filter(ojs.ArticleComment.article_id == article_id))
+
