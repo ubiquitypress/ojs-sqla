@@ -75,7 +75,7 @@ def editorial_team(session):
 		members = session.query(ojs.GroupMemberships).filter(ojs.GroupMemberships.group_id == g.group_id).order_by(ojs.GroupMemberships.seq)
 		group = session.query(ojs.Group).filter(ojs.Group.group_id == g.group_id).one()
 
-		group_dict[g.setting_value] = [{'user_id':m.user.user_id, 'first_name': m.user.first_name, 'last_name': m.user.last_name, 'email': m.user.email, 'url': m.user.url,  'affiliation': get_user_affiliation(session, m.user.user_id), 'bio': get_user_bio(session, m.user.user_id), 'country': m.user.country, 'seq': group.seq } for m in members if m]
+		group_dict[g.setting_value] = [{'user_id':m.user.user_id, 'first_name': m.user.first_name, 'last_name': m.user.last_name, 'email': m.user.email, 'url': m.user.url,  'affiliation': get_user_affiliation(session, m.user.user_id), 'bio': get_user_bio(session, m.user.user_id), 'country': m.user.country, 'seq': group.seq } for m in members if m.user]
 
 	return group_dict
 
@@ -98,8 +98,12 @@ def get_article_events(session):
 def ojs_journal_settings(session):
 	return dict_ojs_settings_results(session.query(ojs.JournalSetting).filter(not_(ojs.JournalSetting.setting_name.contains('::'))))
 
-def get_journal_users(session):
-	users = all_as_dict(session.query(ojs.User))
+def get_journal_users(session, scrape_type=None):
+	if scrape_type == 'latest':
+		date = deltadate(days=30)
+		users = all_as_dict(session.query(ojs.User).filter(ojs.User.date_last_login >= date))
+	else:
+		users = all_as_dict(session.query(ojs.User))
 
 	for user in users:
 		user['settings'] = get_user_settings(session, user['user_id'])
