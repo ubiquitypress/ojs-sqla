@@ -152,7 +152,7 @@ def get_articles(session):
 
 def get_modified_articles(session):
 
-	date = deltadate(7)
+	date = deltadate(28)
 	articles = all_as_dict(session.query(ojs.Article).outerjoin(ojs.PublishedArticle).join(ojs.Section).filter((ojs.Article.date_submitted >= date) | (ojs.Article.last_modified >= date) | (ojs.PublishedArticle.date_published >= date)))
 
 	for article in articles:
