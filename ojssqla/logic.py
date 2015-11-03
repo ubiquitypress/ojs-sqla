@@ -122,6 +122,12 @@ def ojs_journal_settings(session, locale=None):
 def feeling_lucky_settings(session):
 	return session.query(ojs.JournalSetting)
 
+def non_localised_setting(session, setting_name):
+	try:
+		return session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == setting_name).first()
+	except NoResultFound:
+		return None
+
 def get_submission_checklist(session, locale):
 	try:
 		checklist = session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == 'submissionChecklist', ojs.JournalSetting.locale == locale).one()
