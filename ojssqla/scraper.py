@@ -80,7 +80,10 @@ def editorial_team(session):
 	return group_dict
 
 def get_section_setting(session, setting_name, section_id):
-	return session.query(ojs.SectionSettings).filter(ojs.SectionSettings.section_id == section_id, ojs.SectionSettings.setting_name == setting_name).one()
+	try:
+		return session.query(ojs.SectionSettings).filter(ojs.SectionSettings.section_id == section_id, ojs.SectionSettings.setting_name == setting_name, ojs.SectionSettings.locale == 'en_US').one()
+	except NoResultFound:
+		return session.query(ojs.SectionSettings).filter(ojs.SectionSettings.section_id == section_id, ojs.SectionSettings.setting_name == setting_name).first()
 
 def get_sections(session):
 		
