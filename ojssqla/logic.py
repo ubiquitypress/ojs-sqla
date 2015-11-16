@@ -205,6 +205,9 @@ def get_popular_articles(session, limit):
 def get_section_setting(session, setting_name, section_id):
 	return session.query(ojs.SectionSettings).filter(ojs.SectionSettings.section_id == section_id, ojs.SectionSettings.setting_name == setting_name).one()
 
+def get_journal_licenses(session):
+	return session.query(ojs.Licenses).filter(ojs.Licenses.enabled == 1)
+
 def get_article_galley(session, galley_id):
 	try:
 		return session.query(ojs.ArticleGalley).filter(ojs.ArticleGalley.galley_id == galley_id).one()
@@ -567,6 +570,9 @@ def add_session_to_db(db_session, session_id, user, serialised_data, ip, user_ag
 
 def basic_search(session, search_term):
 	return session.query(ojs.Article).join(ojs.ArticleSetting).join(ojs.PublishedArticle).filter(ojs.PublishedArticle.date_published != None).filter(or_(and_(ojs.ArticleSetting.setting_name == 'title', ojs.ArticleSetting.setting_value.match(search_term)), and_(ojs.ArticleSetting.setting_name == 'abstract', ojs.ArticleSetting.setting_value.match(search_term)) ) )
+
+def cloud_search_articles(session, dois):
+	return session.query(ojs.Article).join(ojs.ArticleSetting).join(ojs.PublishedArticle).filter(ojs.PublishedArticle.date_published != None).filter(ojs.ArticleSetting.setting_name == 'pub-id::doi').filter(ojs.ArticleSetting.setting_value.in_(dois))
 
 def get_user_settings(session, user_id):
 	return session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id)

@@ -394,6 +394,14 @@ class Author(Base):
 
     fullname = column_property(first_name + ' ' + last_name)
 
+class Licenses(Base):
+    __tablename__ = 'licenses'
+
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String(200))
+    pretty_name = Column(String(200))
+    enabled = Column(SmallInteger)
+
 
 class BooksForReview(Base):
     __tablename__ = 'books_for_review'
