@@ -120,7 +120,7 @@ def get_additional_policies(session, locale=None):
 
 def get_section_policies(session, locale=None):
 	section_dict = collections.OrderedDict()
-	sections = session.query(ojs.SectionSettings).join(ojs.Section).filter(ojs.SectionSettings.setting_name == 'title', ojs.Section.hide_about == 0).order_by(ojs.Section.seq)
+	sections = session.query(ojs.SectionSettings).join(ojs.Section).filter(ojs.SectionSettings.setting_name == 'title', ojs.Section.hide_about == 0, ojs.SectionSettings.locale == locale).order_by(ojs.Section.seq)
 
 	for s in sections:
 		policy = session.query(ojs.SectionSettings).filter(ojs.SectionSettings.setting_name == 'policy', ojs.SectionSettings.section_id == s.section_id, ojs.SectionSettings.locale == locale).first()
