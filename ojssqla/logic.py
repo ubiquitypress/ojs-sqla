@@ -32,15 +32,38 @@ def as_dict(obj):
 def all_as_dict(obj_list):
 		return [as_dict(obj) for obj in obj_list]
 
-def dict_ojs_settings_results(settings_results):
-	results_dict = {}
 
+def dict_ojs_settings_results(settings_results, locales=None):
+	results_dict = {}
+	if locales:
+		results_dict = dict_ojs_settings_results_localised(settings_results, locales)
+	else:
+		for row in settings_results:
+			if row.setting_type == 'object' and row.setting_name == 'pub-id::doi':
+				results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = loads(row.setting_value).get('en_US')
+			else:
+				results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = row.setting_value
+
+	return results_dict
+
+def dict_ojs_settings_results_localised(settings_results, locales):
+	results_dict = {}
+	# get the settings that have the user language
 	for row in settings_results:
-		if row.setting_type == 'object' and row.setting_name == 'pub-id::doi':
-			results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = loads(row.setting_value).get('en_US')
-		else:
+		if row.locale == locales[0]:
 			results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = row.setting_value
 
+	#find any missing settings on the previous language and try with the default language
+	for locale in locales:
+		for row in settings_results:
+			if row.locale == locale:
+				try :
+					if results_dict[row.setting_name.replace('-', '_').replace('::', '_')] == None or len(results_dict[row.setting_name.replace('-', '_').replace('::', '_')]) <1:
+						results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = row.setting_value
+				except KeyError:
+					results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = row.setting_value
+
+	print results_dict
 	return results_dict
 
 def deltadate(days, start_date=None):
