@@ -63,7 +63,6 @@ def dict_ojs_settings_results_localised(settings_results, locales):
 				except KeyError:
 					results_dict[row.setting_name.replace('-', '_').replace('::', '_')] = row.setting_value
 
-	print results_dict
 	return results_dict
 
 def deltadate(days, start_date=None):
