@@ -77,7 +77,7 @@ def deltadate(days, start_date=None):
 def contact_settings(session, settings_to_get):
 	return session.query(ojs.JournalSetting).filter(ojs.JournalSetting.setting_name.in_(settings_to_get))
 
-def editorial_team(session, locale=None):
+def editorial_team(session, locale='en_US'):
 	group_dict = collections.OrderedDict()
 	groups = session.query(ojs.GroupSettings).join(ojs.Group, ojs.GroupSettings.group_id == ojs.Group.group_id).order_by(ojs.Group.seq)
 	for g in groups:
