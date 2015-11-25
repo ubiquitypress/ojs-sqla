@@ -130,6 +130,28 @@ def get_section_policies(session, locale=None):
 
 	return section_dict
 
+def get_section_editors(session, section_id):
+	editors = all_as_dict(session.query(ojs.SectionEditor).filter(ojs.SectionEditor.section_id == section_id).all())
+	for editor in editors:
+		editor['user'] = as_dict(get_user_from_id(session, editor.get('user_id')))
+		editor['section'] = as_dict(get_section(session, editor.get('section_id')))
+
+	return editors
+
+def assign_section_editor(session, article, submission_id, editor):
+	assignment_dict = {
+		'article_id': submission_id,
+		'editor_id': editor.get('user_id'),
+		'can_edit':editor.get('can_edit'),
+		'can_review': editor.get('can_review'),
+		'date_assigned': date.today(),
+		'date_notified': date.today(),
+	}
+	assignment = ojs.EditAssignment(**assignment_dict)
+	session.add(assignment)
+	session.commit()
+	return 'assigned'
+
 def get_journal_setting(session, setting_name, locale=None):
 	try:
 		return session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == setting_name, ojs.JournalSetting.locale == locale).one()
