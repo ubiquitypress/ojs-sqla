@@ -1349,15 +1349,14 @@ t_scheduled_tasks = Table(
 )
 
 
-t_section_editors = Table(
-    'section_editors', metadata,
-    Column('journal_id', BigInteger, nullable=False, index=True),
-    Column('section_id', BigInteger, nullable=False, index=True),
-    Column('user_id', BigInteger, nullable=False, index=True),
-    Column('can_edit', Integer, nullable=False, server_default=u"'1'"),
-    Column('can_review', Integer, nullable=False, server_default=u"'1'"),
-    Index('section_editors_pkey', 'journal_id', 'section_id', 'user_id')
-)
+class SectionEditor(Base):
+    __tablename__  = 'section_editors'
+
+    journal_id = Column(ForeignKey('journal.journal_id', deferrable=True, initially=u'DEFERRED'), nullable=False, index=True, primary_key=True)
+    section_id = Column(ForeignKey('sections.section_id', deferrable=True, initially=u'DEFERRED'), nullable=False, index=True, primary_key=True)
+    user_id = Column(ForeignKey('users.user_id', deferrable=True, initially=u'DEFERRED'), nullable=False, index=True, primary_key=True)
+    can_edit = Column(Integer, nullable=False, server_default=u"'1'")
+    can_review = Column(Integer, nullable=False, server_default=u"'1'")
 
 
 class SectionSettings(Base):

@@ -67,7 +67,7 @@ def get_user_affiliation(session, user_id):
 	except NoResultFound:
 		return None
 
-def editorial_team(session):
+def editorial_team(session, locale=None):
 	group_dict = collections.OrderedDict()
 	groups = session.query(ojs.GroupSettings).join(ojs.Group, ojs.GroupSettings.group_id == ojs.Group.group_id).order_by(ojs.Group.seq)
 
