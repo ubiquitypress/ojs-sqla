@@ -815,3 +815,5 @@ def get_review_details(session, article_id):
 def get_article_comments(session, article_id):
 	return all_as_dict(session.query(ojs.ArticleComment).filter(ojs.ArticleComment.article_id == article_id))
 
+def get_email_template(session, email_key):
+	return as_dict(session.query(ojs.EmailTemplateData).filter(ojs.EmailTemplateData.email_key == email_key).one())

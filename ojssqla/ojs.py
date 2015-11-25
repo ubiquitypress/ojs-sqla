@@ -714,17 +714,15 @@ class EmailTemplate(Base):
     assoc_id = Column(BigInteger, server_default=u"'0'")
     enabled = Column(Integer, nullable=False, server_default=u"'1'")
 
-
-t_email_templates_data = Table(
-    'email_templates_data', metadata,
-    Column('email_key', String(64), nullable=False),
-    Column('locale', String(5), nullable=False, server_default=u"'en_US'"),
-    Column('assoc_type', BigInteger, server_default=u"'0'"),
-    Column('assoc_id', BigInteger, server_default=u"'0'"),
-    Column('subject', String(120), nullable=False),
-    Column('body', Text),
-    Index('email_templates_data_pkey', 'email_key', 'locale', 'assoc_type', 'assoc_id')
-)
+class EmailTemplateData(Base):
+    __tablename__ = 'email_templates_data'
+    __table_args__ = (Index('email_templates_data_pkey', 'email_key', 'locale', 'assoc_type', 'assoc_id'),)
+    email_key = Column(String(64), nullable=False, primary_key=True)
+    locale = Column(String(5), nullable=False, server_default=u"'en_US'")
+    assoc_type = Column(BigInteger, primary_key=True)
+    assoc_id = Column(BigInteger, primary_key=True)
+    subject = Column(String(120), nullable=False)
+    body = Column(Text)
 
 
 class EmailTemplatesDefault(Base):
