@@ -77,17 +77,18 @@ def deltadate(days, start_date=None):
 def contact_settings(session, settings_to_get):
 	return session.query(ojs.JournalSetting).filter(ojs.JournalSetting.setting_name.in_(settings_to_get))
 
-def editorial_team(session):
+def editorial_team(session, locale=None):
 	group_dict = collections.OrderedDict()
-	groups = session.query(ojs.GroupSettings).join(ojs.Group, ojs.GroupSettings.group_id == ojs.Group.group_id).order_by(ojs.Group.seq)
-
+	groups = session.query(ojs.GroupSettings).join(ojs.Group, ojs.GroupSettings.group_id == ojs.Group.group_id).filter(ojs.GroupSettings.locale == locale).order_by(ojs.Group.seq)
+	print groups
 	for g in groups:
 		members = session.query(ojs.GroupMemberships).filter(ojs.GroupMemberships.group_id == g.group_id).order_by(ojs.GroupMemberships.seq)
 		group = session.query(ojs.Group).filter(ojs.Group.group_id == g.group_id).one()
 
-		group_dict[g.setting_value] = [{'first_name': m.user.first_name, 'last_name': m.user.last_name, 'email': m.user.email, 'url': m.user.url,  'affiliation': get_user_affiliation(session, m.user.user_id), 'bio': get_user_bio(session, m.user.user_id), 'country': m.user.country, 'display_email': group.publish_email } for m in members if m.user]
+		group_dict[g.setting_value] = [{'first_name': m.user.first_name, 'last_name': m.user.last_name, 'email': m.user.email, 'url': m.user.url,  'affiliation': get_user_affiliation(session, m.user.user_id, locale), 'bio': get_user_bio(session, m.user.user_id, locale), 'country': m.user.country, 'display_email': group.publish_email } for m in members if m.user]
 
 	return group_dict
+
 
 def get_serialized_setting(session, setting_name):
 	try:
@@ -96,16 +97,22 @@ def get_serialized_setting(session, setting_name):
 	except NoResultFound:
 		return None
 
-def get_user_affiliation(session, user_id):
+def get_user_affiliation(session, user_id, locale=None):
 	try:
-		user_affiliation = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'affiliation').first())
+		if locale:
+			user_affiliation = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.locale == locale, ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'affiliation').first())
+		else:
+			user_affiliation = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'affiliation').first())
 		return user_affiliation.get('setting_value', None)
 	except NoResultFound:
 		return None
 
-def get_user_bio(session, user_id):
+def get_user_bio(session, user_id, locale):
 	try:
-		user_bio = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'biography').first())
+		if locale:
+			user_bio = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.locale == locale, ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'biography').first())
+		else:
+			user_bio = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'biography').first())
 		return user_bio.get('setting_value', None)
 	except NoResultFound:
 		return None
