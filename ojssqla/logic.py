@@ -79,8 +79,7 @@ def contact_settings(session, settings_to_get):
 
 def editorial_team(session, locale=None):
 	group_dict = collections.OrderedDict()
-	groups = session.query(ojs.GroupSettings).join(ojs.Group, ojs.GroupSettings.group_id == ojs.Group.group_id).filter(ojs.GroupSettings.locale == locale).order_by(ojs.Group.seq)
-	print groups
+	groups = session.query(ojs.GroupSettings).join(ojs.Group, ojs.GroupSettings.group_id == ojs.Group.group_id).order_by(ojs.Group.seq)
 	for g in groups:
 		members = session.query(ojs.GroupMemberships).filter(ojs.GroupMemberships.group_id == g.group_id).order_by(ojs.GroupMemberships.seq)
 		group = session.query(ojs.Group).filter(ojs.Group.group_id == g.group_id).one()
@@ -99,23 +98,24 @@ def get_serialized_setting(session, setting_name):
 
 def get_user_affiliation(session, user_id, locale=None):
 	try:
-		if locale:
-			user_affiliation = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.locale == locale, ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'affiliation').first())
-		else:
-			user_affiliation = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'affiliation').first())
-		return user_affiliation.get('setting_value', None)
+		user_affiliation = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.locale == locale, ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'affiliation').one())
 	except NoResultFound:
-		return None
+		try:
+			user_affiliation = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'affiliation').first())
+		except NoResultFound:
+			return None
+	return user_affiliation.get('setting_value', None)
 
 def get_user_bio(session, user_id, locale):
+
 	try:
-		if locale:
-			user_bio = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.locale == locale, ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'biography').first())
-		else:
-			user_bio = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'biography').first())
-		return user_bio.get('setting_value', None)
+		user_bio = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.locale == locale, ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'biography').one())
 	except NoResultFound:
-		return None
+		try:
+			user_bio = as_dict(session.query(ojs.UserSetting).filter(ojs.UserSetting.locale == locale, ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == 'biography').first())
+		except NoResultFound:
+			return None
+	return user_bio.get('setting_value', None)
 
 def get_additional_policies(session, locale=None):
 	try:
