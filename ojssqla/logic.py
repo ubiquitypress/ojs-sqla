@@ -79,7 +79,7 @@ def contact_settings(session, settings_to_get):
 
 def editorial_team(session, locale='en_US'):
 	group_dict = collections.OrderedDict()
-	groups = session.query(ojs.GroupSettings).join(ojs.Group, ojs.GroupSettings.group_id == ojs.Group.group_id).order_by(ojs.Group.seq)
+	groups = session.query(ojs.GroupSettings).join(ojs.Group, ojs.GroupSettings.group_id == ojs.Group.group_id).filter(ojs.GroupSettings.locale == locale).order_by(ojs.Group.seq)
 	for g in groups:
 		members = session.query(ojs.GroupMemberships).filter(ojs.GroupMemberships.group_id == g.group_id).order_by(ojs.GroupMemberships.seq)
 		group = session.query(ojs.Group).filter(ojs.Group.group_id == g.group_id).one()
