@@ -437,7 +437,7 @@ def article_transfer_stage_one(session, article_one, article_settings, taxonomy_
 			'locale': 'en_US',
 			'setting_name': k,
 			'setting_value': v,
-			'setting_type': 'seting',
+			'setting_type': 'string',
 		}
 		new_article_setting = ojs.ArticleSetting(**kwargs)
 		session.add(new_article_setting)
