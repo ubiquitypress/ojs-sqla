@@ -820,7 +820,7 @@ def get_review_details(session, article_id):
 	return review_assignments
 
 def get_article_comments(session, article_id):
-	return all_as_dict(session.query(ojs.ArticleComment).filter(ojs.ArticleComment.article_id == article_id, comment_type == 4))
+	return all_as_dict(session.query(ojs.ArticleComment).filter(ojs.ArticleComment.article_id == article_id, ojs.ArticleComment.comment_type == 4))
 
 def get_email_template(session, email_key):
 	return as_dict(session.query(ojs.EmailTemplateData).filter(ojs.EmailTemplateData.email_key == email_key).one())
