@@ -47,7 +47,7 @@ def dict_ojs_settings_results(settings_results, locales=None):
 	return results_dict
 
 def dict_ojs_settings_results_localised(settings_results, locales):
-	locales.append(None) #ensures that non localised settings are also being pulled
+	locales.append('') #ensures that non localised settings are also being pulled.
 	results_dict = {}
 	# get the settings that have the user language
 	for row in settings_results:
