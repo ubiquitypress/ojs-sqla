@@ -820,8 +820,23 @@ def get_review_details(session, article_id):
 
 	return review_assignments
 
-def get_article_comments(session, article_id):
-	return all_as_dict(session.query(ojs.ArticleComment).filter(ojs.ArticleComment.article_id == article_id, ojs.ArticleComment.comment_type == 4))
+def get_article_comments(session, article_id=None, date=None, article_ids=None, count=None):
+
+	filters = [ojs.ArticleComment.comment_type == 4]
+	if date:
+		filters.append(ojs.ArticleComment.date_posted > date)
+	if article_id:
+		filters.append(ojs.ArticleComment.article_id == article_id)
+	elif article_ids:
+		filters.append(ojs.ArticleComment.article_id in article_ids)
+
+	if count:
+		return session.query(ojs.ArticleComment.article_id).filter(*filters).count()
+	else:
+		return all_as_dict(session.query(ojs.ArticleComment).filter(*filters).order_by('date_posted desc'))
+
+# def get_article_comments(session, article_id, date=None):
+# 	return all_as_dict(session.query(ojs.ArticleComment).filter(ojs.ArticleComment.article_id == article_id, ojs.ArticleComment.comment_type == 4))
 
 def get_email_template(session, email_key):
 	return as_dict(session.query(ojs.EmailTemplateData).filter(ojs.EmailTemplateData.email_key == email_key).one())
