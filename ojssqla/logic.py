@@ -557,6 +557,12 @@ def get_user_by_email(session, email):
 	except NoResultFound:
 		return None
 
+def get_user_by_username(session, username):
+	try:
+		return session.query(ojs.User).filter(ojs.User.username == username).one()
+	except NoResultFound:
+		return None
+
 def hash_password(username, password):
 	return hashlib.sha1(("%s%s" % (username, password)).encode('utf-8')).hexdigest()
 
@@ -728,6 +734,22 @@ def set_new_user_details(session, user_id, user_dict, settings_dict):
 
 	session.commit()
 
+def get_reviewing_interests(session, user_id):
+	user_interests = all_as_dict(session.query(ojs.UserInterests).join(ControlledVocabEntry).filter(ojs.UserInterests.user_id == user_id))
+	for interest in user_interest:
+		interest['controlled_vocab']['settings'] = get_controlled_vocab_entry_settings(session, interest['controlled_vocab'].get('controlled_vocab_entry_id'))
+
+	return user_interests
+
+def get_controlled_vocab_entry_settings(session, entry_id):
+	return dict_ojs_settings_results(session.query(ojs.ControlledVocabEntrySettings).filter(ojs.ControlledVocabEntrySettings.controlled_vocab_entry_id == entry_id))
+
+def delete_reviewing_interests(session, user_id):
+	user_interests = session.query(ojs.UserInterests).filter(ojs.UserInterests.user_id == user_id).all()
+	[session.delete(interest) for interest in user_interests]
+	session.commit()
+	return True
+
 def set_reviewing_interest(session, interest, user):
 	#First, the new vocab entry
 	kwargs = {
@@ -752,8 +774,13 @@ def set_reviewing_interest(session, interest, user):
 		'controlled_vocab_entry_id': new_vocab_entry.controlled_vocab_entry_id,
 		'setting_name': 'interest',
 		'setting_type': 'string',
-		'setting_value': interest.name
 	}
+	
+	try:
+		kwargs['setting_value'] = interest.name
+	except:
+		kwargs['setting_value'] = interest
+
 	new_controlled_vocab_settings = ojs.ControlledVocabEntrySettings(**kwargs)
 	session.add(new_controlled_vocab_settings)
 	session.commit()

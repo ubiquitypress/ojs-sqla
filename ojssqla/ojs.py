@@ -561,10 +561,17 @@ class ControlledVocabEntry(Base):
     controlled_vocab_id = Column(BigInteger, nullable=False)
     seq = Column(Float(asdecimal=True))
 
+    settings = relationship(
+        u'ControlledVocabEntrySettings', 
+        primaryjoin='ControlledVocabEntry.controlled_vocab_entry_id == ControlledVocabEntrySettings.controlled_vocab_entry_id',
+        backref=backref('controlled_vocab_entry_settings', cascade="all, delete")
+    )
+
+
 class ControlledVocabEntrySettings(Base):
     __tablename__ = 'controlled_vocab_entry_settings'
 
-    controlled_vocab_entry_id = controlled_vocab_entry_id = Column(BigInteger, nullable=False, primary_key=True)
+    controlled_vocab_entry_id = Column(ForeignKey(ControlledVocabEntry.controlled_vocab_entry_id, deferrable=True, initially=u'DEFERRED'), nullable=False, primary_key=True)
     locale = Column(String(5), nullable=False, server_default=u"''")
     setting_name = Column(String(255), nullable=False)
     setting_value = Column(String(255), nullable=False)
@@ -1571,8 +1578,12 @@ t_usage_stats_temporary_records = Table(
 class UserInterests(Base):
     __tablename__ = 'user_interests'
 
-    user_id = Column(BigInteger, nullable=False)
-    controlled_vocab_entry_id = Column(BigInteger, nullable=False, primary_key=True)
+    user_id = Column(ForeignKey('users.user_id', deferrable=True, initially=u'DEFERRED'), nullable=False, primary_key=True)
+    controlled_vocab_entry_id = Column(ForeignKey(ControlledVocabEntry.controlled_vocab_entry_id, deferrable=True, initially=u'DEFERRED'), nullable=False, primary_key=True)
+
+    controlled_vocab = relationship(u'ControlledVocabEntry', primaryjoin='UserInterests.controlled_vocab_entry_id == ControlledVocabEntry.controlled_vocab_entry_id', lazy='joined')
+    Column(ForeignKey(ControlledVocabEntry.controlled_vocab_entry_id, deferrable=True, initially=u'DEFERRED'), nullable=False, primary_key=True)
+
 
 '''
 t_user_interests = Table(
@@ -1629,6 +1640,7 @@ class User(Base):
     inline_help = Column(Integer)
 
     roles = relationship(u'Roles', primaryjoin='User.user_id == Roles.user_id', lazy='joined')
+    interests = relationship(u'UserInterests', primaryjoin='User.user_id == UserInterests.user_id', lazy='joined')
 
 class GroupMemberships(Base):
     __tablename__ = 'group_memberships'
