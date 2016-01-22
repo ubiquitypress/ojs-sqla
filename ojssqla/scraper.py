@@ -190,3 +190,8 @@ def get_issues(session):
 	 	issue['description'] = as_dict(session.query(ojs.IssueSettings).filter(ojs.IssueSettings.issue_id == issue.get('issue_id'), ojs.IssueSettings.setting_name == 'description')).get('setting_value')
 	 	issue.pop('journal_id')
 	return issues
+
+
+def get_article_keywords_list(session, article_id):
+
+	return session.query(ojs.ArticleSetting.setting_value).filter(ojs.ArticleSetting.article_id == article_id, ojs.ArticleSetting.setting_name == 'subject').first()
