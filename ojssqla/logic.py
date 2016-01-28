@@ -827,7 +827,10 @@ def get_review_field_name(session, element_id):
 def get_possible_answers(session, element_id):
 	try:
 		responses = session.query(ojs.ReviewFormElementSettings.setting_value).filter(ojs.ReviewFormElementSettings.setting_name == 'possibleResponses', ojs.ReviewFormElementSettings.review_form_element_id == element_id).one()
-		return loads(responses[0])
+		try:
+			return loads(responses[0])
+		except:
+			return None
 	except NoResultFound:
 		return None
 
