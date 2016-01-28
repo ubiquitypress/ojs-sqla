@@ -462,6 +462,27 @@ def article_transfer_stage_one(session, article_one, article_settings, taxonomy_
 	session.commit()
 	return new_article.article_id
 
+def set_article_setting(session, article, setting_name, setting_value):
+
+	try:
+		setting = session.query(ojs.ArticleSetting).filter(ojs.ArticleSetting.article_id == article.get('article_id'), ojs.ArticleSetting.setting_name == setting_name).one()
+		setting.setting_value = setting_value
+		session.flush()
+		return setting
+	except NoResultFound:
+		kwargs = {
+			'article_id': article.get('article_id'),
+			'locale': '',
+			'setting_name': setting_name,
+			'setting_value': setting_value,
+			'setting_type': 'string',
+		}
+		new_article_setting = ojs.ArticleSetting(**kwargs)
+		session.add(new_article_setting)
+		session.flush()
+
+		return new_article_setting
+
 def file_transfer(session, _dict, file_id, file_type, file_extension):
 	'''
 	Creates file records in OJS associated with an article
