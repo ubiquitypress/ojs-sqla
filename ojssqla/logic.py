@@ -638,6 +638,29 @@ def get_user_settings(session, user_id):
 def get_user_settings_dict(session, user_id):
 	return dict_ojs_settings_results(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id))
 
+def update_or_create_user_setting(session, user_id, setting_name, setting_value, locale=None, setting_type='string'):
+
+	try:
+		setting = session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == k, ojs.UserSetting.locale == locale).one()
+		setattr(setting, 'setting_value', setting_value)
+		session.flush()
+		return setting
+
+	except NoResultFound:
+		kwargs = {
+				'user_id': user_id,
+				'setting_name': setting_name,
+				'setting_value': v,
+				'locale': locale,
+				'setting_type': setting_type,
+				'assoc_type': 0,
+			}
+		new_setting = ojs.UserSetting(**kwargs)
+		session.add(new_setting)
+
+	return new_setting
+
+
 def get_author_settings(session, author_id):
 	return session.query(ojs.AuthorSetting).filter(ojs.AuthorSetting.author_id == author_id)
 
@@ -867,3 +890,6 @@ def get_article_comments(session, article_id=None, date=None, article_ids=None, 
 
 def get_email_template(session, email_key):
 	return as_dict(session.query(ojs.EmailTemplateData).filter(ojs.EmailTemplateData.email_key == email_key).one())
+
+
+
