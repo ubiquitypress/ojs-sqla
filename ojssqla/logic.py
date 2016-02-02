@@ -662,7 +662,7 @@ def get_user_settings_dict(session, user_id):
 def update_or_create_user_setting(session, user_id, setting_name, setting_value, locale=None, setting_type='string'):
 
 	try:
-		setting = session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == k, ojs.UserSetting.locale == locale).one()
+		setting = session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id, ojs.UserSetting.setting_name == setting_name, ojs.UserSetting.locale == locale).one()
 		setattr(setting, 'setting_value', setting_value)
 		session.flush()
 		return setting
@@ -671,7 +671,7 @@ def update_or_create_user_setting(session, user_id, setting_name, setting_value,
 		kwargs = {
 				'user_id': user_id,
 				'setting_name': setting_name,
-				'setting_value': v,
+				'setting_value': setting_value,
 				'locale': locale,
 				'setting_type': setting_type,
 				'assoc_type': 0,
