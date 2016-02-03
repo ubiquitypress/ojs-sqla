@@ -137,11 +137,15 @@ def get_section_policies(session, locale=None):
 
 	return section_dict
 
-def get_section_editors(session, section_id=None):
+def get_section_editors(session, section_id=None, user_id=None):
+
+	filters = []
 	if section_id:
-		editors = all_as_dict(session.query(ojs.SectionEditor).filter(ojs.SectionEditor.section_id == section_id).all())
-	else:
-		editors = all_as_dict(session.query(ojs.SectionEditor).all())
+		filters.append(ojs.SectionEditor.section_id == section_id)
+	if user_id:
+		filters.append(ojs.SectionEditor.user_id == user_id)
+
+	editors = all_as_dict(session.query(ojs.SectionEditor).filter(*filters).all())
 	for editor in editors:
 		editor['user'] = as_dict(get_user_from_id(session, editor.get('user_id')))
 		editor['section'] = as_dict(get_section(session, editor.get('section_id')))
