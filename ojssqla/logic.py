@@ -473,10 +473,22 @@ def article_transfer_stage_one(session, article_one, article_settings, taxonomy_
 def set_article_setting(session, article, setting_name, setting_value):
 
 	try:
-		setting = session.query(ojs.ArticleSetting).filter(ojs.ArticleSetting.article_id == article.get('article_id'), ojs.ArticleSetting.setting_name == setting_name).one()
-		setting.setting_value = setting_value
-		session.flush()
-		return setting
+		try:
+			setting = session.query(ojs.ArticleSetting).filter(ojs.ArticleSetting.article_id == article.get('article_id'), ojs.ArticleSetting.setting_name == setting_name).one()
+			setting.setting_value = setting_value
+			session.flush()
+			return setting
+		except MultipleResultsFound:
+			settings = session.query(ojs.ArticleSetting).filter(ojs.ArticleSetting.article_id == article.get('article_id'), ojs.ArticleSetting.setting_name == setting_name, ojs.ArticleSetting.locale != None)
+			for setting in settings:
+				session.delete(setting)
+			session.flush()
+
+			setting = session.query(ojs.ArticleSetting).filter(ojs.ArticleSetting.article_id == article.get('article_id'), ojs.ArticleSetting.setting_name == setting_name).one()
+			setting.setting_value = setting_value
+			session.flush()
+			return setting
+
 	except NoResultFound:
 		kwargs = {
 			'article_id': article.get('article_id'),
