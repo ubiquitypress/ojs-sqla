@@ -309,7 +309,7 @@ def get_issues(session):
 
 def get_issue(session, volume_id, issue_id, ojs_id):
 	try:
-		return session.query(ojs.Issue).filter(ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id, ojs.Issue.issue_id == ojs_id, or_(ojs.Issue.access_status == 0, ojs.Issue.access_status == 1, and_(ojs.Issue.access_status == 2, ojs.Issue.open_access_date<=date.today()))).one()
+		return session.query(ojs.Issue).filter(ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id, ojs.Issue.issue_id == ojs_id, ojs.Issue.date_published != None, or_(ojs.Issue.access_status == 0, ojs.Issue.access_status == 1, and_(ojs.Issue.access_status == 2, ojs.Issue.open_access_date<=date.today()))).one()
 	except NoResultFound:
 		return None
 
