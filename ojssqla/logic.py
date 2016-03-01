@@ -235,6 +235,15 @@ def get_article_by_id(session, doi):
 		except NoResultFound:
 			return None
 
+def get_article_by_id_preview(session, id):
+	try:
+		return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.Article.article_id == id).one()
+	except NoResultFound:
+		try:
+			return session.query(ojs.Article).join(ojs.ArticleSetting).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.ArticleSetting.setting_name == 'pub-id::publisher-id', ojs.ArticleSetting.setting_value == doi).one()
+		except NoResultFound:
+			return None
+
 def get_article_by_pubid(session, pubid):
 	try:
 		return session.query(ojs.Article).join(ojs.ArticleSetting).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.ArticleSetting.setting_name == 'pub-id::publisher-id', ojs.ArticleSetting.setting_value == pubid, ojs.Issue.date_published != None).one()
@@ -309,7 +318,7 @@ def get_issues(session):
 
 def get_issue(session, volume_id, issue_id, ojs_id):
 	try:
-		return session.query(ojs.Issue).filter(ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id, ojs.Issue.issue_id == ojs_id, ojs.Issue.date_published != None, or_(ojs.Issue.access_status == 0, ojs.Issue.access_status == 1, and_(ojs.Issue.access_status == 2, ojs.Issue.open_access_date<=date.today()))).one()
+		return session.query(ojs.Issue).filter(ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id, ojs.Issue.issue_id == ojs_id, ojs.Issue.date_published <= date.today(), or_(ojs.Issue.access_status == 0, ojs.Issue.access_status == 1, and_(ojs.Issue.access_status == 2, ojs.Issue.open_access_date<=date.today()))).one()
 	except NoResultFound:
 		return None
 
