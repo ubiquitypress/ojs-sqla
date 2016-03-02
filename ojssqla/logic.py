@@ -237,7 +237,7 @@ def get_article_by_id(session, doi):
 
 def get_article_by_id_preview(session, id):
 	try:
-		return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.Article.article_id == id).one()
+		return session.query(ojs.Article).outerjoin(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.Article.article_id == id).one()
 	except NoResultFound:
 		try:
 			return session.query(ojs.Article).join(ojs.ArticleSetting).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.ArticleSetting.setting_name == 'pub-id::publisher-id', ojs.ArticleSetting.setting_value == doi).one()
