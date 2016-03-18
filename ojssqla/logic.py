@@ -6,7 +6,7 @@ from sqlalchemy.orm import joinedload,subqueryload, contains_eager
 from sqlalchemy import desc, asc, func, and_, or_, extract
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from phpserialize import *
 
 #
@@ -318,7 +318,7 @@ def get_issues(session):
 
 def get_issue(session, volume_id, issue_id, ojs_id):
 	try:
-		return session.query(ojs.Issue).filter(ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id, ojs.Issue.issue_id == ojs_id, ojs.Issue.date_published <= date.today(), or_(ojs.Issue.access_status == 0, ojs.Issue.access_status == 1, and_(ojs.Issue.access_status == 2, ojs.Issue.open_access_date<=date.today()))).one()
+		return session.query(ojs.Issue).filter(ojs.Issue.volume == volume_id, ojs.Issue.number == issue_id, ojs.Issue.issue_id == ojs_id, ojs.Issue.date_published <= datetime.now(), or_(ojs.Issue.access_status == 0, ojs.Issue.access_status == 1, and_(ojs.Issue.access_status == 2, ojs.Issue.open_access_date<=datetime.now()))).one()
 	except NoResultFound:
 		return None
 
