@@ -368,9 +368,30 @@ def get_collection_user_name(session, user_id):
 	except NoResultFound:
 		pass
 
+def get_all_users(session):
+	return session.query(ojs.User)
+
 def get_collection_articles(session, collection_articles):
 	article_ids = [article.get('published_article_id') for article in collection_articles]
 	return session.query(ojs.Article).join(ojs.PublishedArticle).filter(ojs.PublishedArticle.published_article_id.in_(article_ids)).order_by(desc(ojs.PublishedArticle.date_published))
+
+def get_ordered_collection_articles(session, collection_articles):
+	article_ids = [article.get('published_article_id') for article in collection_articles]
+	articles = []
+
+	for article in article_ids:
+		articles.append(as_dict(session.query(ojs.Article).join(ojs.PublishedArticle).filter(ojs.PublishedArticle.published_article_id == article).one()))
+
+	return articles
+
+def get_ordered_collection_users(session, collection_users):
+	user_ids = [user.get('user_id') for user in collection_users]
+	users = []
+
+	for user in user_ids:
+		users.append(as_dict(session.query(ojs.User).filter(ojs.User.user_id == user).one()))
+
+	return users
 
 def get_collections_from_article(session, article):
 	if article.get('published_article'):
@@ -583,22 +604,25 @@ def add_review_Reound(session, ojs_article_id):
 
 def insert_roles(session, user_id, roles):
 	for role in roles:
-		kwargs = {
-			'journal_id': 1,
-			'user_id': user_id,
-			'role_id': role,
-		}
-		new_role = ojs.Roles(**kwargs)
-		session.add(new_role)
-		session.flush()
+		role_check = get_role(session, user_id, role)
+		if not role_check:
+			kwargs = {
+				'journal_id': 1,
+				'user_id': user_id,
+				'role_id': role,
+			}
+			new_role = ojs.Roles(**kwargs)
+			session.add(new_role)
+			session.flush()
 
 	session.commit()
 	return True
 
 def remove_role_from_user(session, user_id, role_id):
 	role = get_role(session, user_id, role_id)
-	session.delete(role)
-	session.commit()
+	if role:
+		session.delete(role)
+		session.commit()
 	return True
 
 def get_user_by_email(session, email):
@@ -610,6 +634,12 @@ def get_user_by_email(session, email):
 def get_user_by_username(session, username):
 	try:
 		return session.query(ojs.User).filter(ojs.User.username == username).one()
+	except NoResultFound:
+		return None
+
+def get_user_by_id(session, user_id):
+	try:
+		return session.query(ojs.User).filter(ojs.User.user_id == user_id).one()
 	except NoResultFound:
 		return None
 
@@ -681,6 +711,9 @@ def basic_search(session, search_term):
 
 def cloud_search_articles(session, dois):
 	return session.query(ojs.Article).join(ojs.ArticleSetting).join(ojs.PublishedArticle).filter(ojs.PublishedArticle.date_published != None).filter(ojs.ArticleSetting.setting_name == 'pub-id::doi').filter(ojs.ArticleSetting.setting_value.in_(dois))
+
+def collection_search(session, search_term):
+	return session.query(ojs.Article).join(ojs.ArticleSetting).join(ojs.PublishedArticle).filter(ojs.PublishedArticle.date_published != None).filter(or_(and_(ojs.ArticleSetting.setting_name == 'title', ojs.ArticleSetting.setting_value.match(search_term)), and_(ojs.ArticleSetting.setting_name == 'pub-id::doi', ojs.ArticleSetting.setting_value == search_term) ) )
 
 def get_user_settings(session, user_id):
 	return session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user_id)
@@ -944,5 +977,92 @@ def get_article_comments(session, article_id=None, date=None, article_ids=None, 
 def get_email_template(session, email_key):
 	return as_dict(session.query(ojs.EmailTemplateData).filter(ojs.EmailTemplateData.email_key == email_key).one())
 
+def is_article_in_collection(session, article_id, collection_id):
+	try:
+		return session.query(ojs.CollectionArticle).filter(ojs.CollectionArticle.collection_id == collection_id, ojs.CollectionArticle.published_article_id == article_id).one()
+	except NoResultFound:
+		return None
 
+def add_article_to_collection(session, published_article_id, collection_id):
+	kwargs = {
+		"collection_id": collection_id,
+		"published_article_id": published_article_id,
+	}
 
+	new_collection_article = ojs.CollectionArticle(**kwargs)
+	session.add(new_collection_article)
+	session.flush()
+
+	return new_collection_article
+
+def remove_collection_from_article(session, collection_id, published_article_id):
+	try:
+		collection_article = session.query(ojs.CollectionArticle).filter(ojs.CollectionArticle.collection_id == collection_id, ojs.CollectionArticle.published_article_id == published_article_id).one()
+		session.delete(collection_article)
+		session.flush()
+		return True
+	except NoResultFound:
+		return None
+
+def is_user_in_collection(session, collection_id, user_id):
+	try:
+		return session.query(ojs.CollectionUser).filter(ojs.CollectionUser.user_id == user_id, ojs.CollectionUser.collection_id == collection_id).one()
+	except NoResultFound:
+		return None
+
+def add_user_to_collection(session, user_id, collection_id, role_name):
+	kwargs = {
+		"user_id": user_id,
+		"collection_id": collection_id,
+		'role_name': role_name,
+	}
+
+	new_collection_user = ojs.CollectionUser(**kwargs)
+	session.add(new_collection_user)
+	session.flush()
+
+	return new_collection_user
+
+def remove_user_from_collection(session, collection_id, user_id):
+	try:
+		collection_user = session.query(ojs.CollectionUser).filter(ojs.CollectionUser.collection_id == collection_id, ojs.CollectionUser.user_id == user_id).one()
+		session.delete(collection_user)
+		session.flush()
+		return True
+	except NoResultFound:
+		return None
+
+def update_article_order(session, collection_id, article_id, order):
+	try:
+		collection_article = session.query(ojs.CollectionArticle).filter(ojs.CollectionArticle.collection_id == collection_id, ojs.CollectionArticle.published_article_id == article_id).one()
+		collection_article.order = order
+		session.flush()
+		return True
+	except NoResultFound:
+		return None
+
+def update_editor_order(session, collection_id, editor_id, order):
+	try:
+		collection_user = session.query(ojs.CollectionUser).filter(ojs.CollectionUser.collection_id == collection_id, ojs.CollectionUser.user_id == editor_id).one()
+		collection_user.order = order
+		session.flush()
+		return True
+	except NoResultFound:
+		return None
+
+def save_collection_data(session, collection_id, data):
+	try:
+		collection = session.query(ojs.Collection).filter(ojs.Collection.id == collection_id).one()
+		for k,v, in data.iteritems():
+			setattr(collection, k, v)
+		session.flush()
+		return collection
+	except NoResultFound:
+		return None
+
+def add_collection(session, data):
+	new_collection = ojs.Collection(**data)
+	session.add(new_collection)
+	session.flush()
+
+	return new_collection
