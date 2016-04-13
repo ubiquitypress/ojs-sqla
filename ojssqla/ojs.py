@@ -503,14 +503,20 @@ class Collection(Base):
     disabled = Column(BIT(1))
     discussions = Column(Integer)
 
-    users = relationship(u'CollectionUser', primaryjoin='Collection.id == CollectionUser.collection_id')
-    articles = relationship(u'CollectionArticle', primaryjoin='Collection.id == CollectionArticle.collection_id')
+    users = relationship(u'CollectionUser', primaryjoin='Collection.id == CollectionUser.collection_id', order_by='CollectionUser.order')
+    articles = relationship(u'CollectionArticle', primaryjoin='Collection.id == CollectionArticle.collection_id', order_by='CollectionArticle.order')
 
 class CollectionArticle(Base):
     __tablename__ = 'collection_article'
 
     collection_id = Column(ForeignKey('collection.id', deferrable=True, initially=u'DEFERRED'), primary_key=True, nullable=False)
     published_article_id = Column(BigInteger, primary_key=True, nullable=False)
+    order = Column(Integer, nullable=True)
+
+    __mapper_args__ = {
+        "order_by": order
+    }
+
 
 class CollectionUser(Base):
     __tablename__ = 'collection_user'
@@ -518,6 +524,7 @@ class CollectionUser(Base):
     collection_id = Column(ForeignKey('collection.id', deferrable=True, initially=u'DEFERRED'), primary_key=True, nullable=False)
     user_id = Column(BigInteger, primary_key=True, nullable=False)
     role_name = Column(String(50), nullable=False, server_default=u"'editor'")
+    order = Column(Integer, nullable=True)
 
 
 class Comment(Base):
