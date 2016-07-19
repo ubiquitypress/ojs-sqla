@@ -167,6 +167,19 @@ def assign_section_editor(session, article, submission_id, editor):
 	session.commit()
 	return 'assigned'
 
+def get_journal_editors(session):
+	role_list = session.query(ojs.Roles).filter(ojs.Roles.role_id == 256)
+
+	users = []
+	for role in role_list:
+		try:
+			user = as_dict(session.query(ojs.User).filter(ojs.User.user_id == role.user_id).filter(ojs.User.username != 'upadmin').one())
+			user['settings'] = dict_ojs_settings_results(session.query(ojs.UserSetting).filter(ojs.UserSetting.user_id == user.get('user_id')))
+			users.append(user)
+		except NoResultFound:
+			pass
+	return users
+
 def get_journal_setting(session, setting_name, locale=None):
 	try:
 		return session.query(ojs.JournalSetting.setting_value).filter(ojs.JournalSetting.setting_name == setting_name, ojs.JournalSetting.locale == locale).one()
@@ -956,6 +969,36 @@ def get_review_details(session, article_id):
 
 	return review_assignments
 
+def get_uncomplete_review_details(session):
+	review_assignments = all_as_dict(session.query(ojs.ReviewAssignment).filter(ojs.ReviewAssignment.date_completed == None, ojs.ReviewAssignment.date_reminded == None, ojs.ReviewAssignment.declined == 0, ojs.ReviewAssignment.replaced == 0, ojs.ReviewAssignment.cancelled == 0).order_by(ojs.ReviewAssignment.date_due))
+	for assignment in review_assignments:
+		assignment['reviewer_settings'] = get_user_settings_dict(session, assignment.get('reviewer').user_id)
+		assignment['article'] = get_article_by_id_preview(session, assignment['submission_id'])
+		assignment['title'] = get_article_settings(session, assignment['submission_id'], 'title')
+	return review_assignments
+
+def get_unconfirmed_reviews(session):
+	review_assignments = all_as_dict(session.query(ojs.ReviewAssignment).filter(ojs.ReviewAssignment.date_confirmed == None, ojs.ReviewAssignment.date_completed == None, ojs.ReviewAssignment.date_reminded == None, ojs.ReviewAssignment.declined == 0, ojs.ReviewAssignment.replaced == 0, ojs.ReviewAssignment.cancelled == 0).order_by(ojs.ReviewAssignment.date_due))
+	for assignment in review_assignments:
+		assignment['reviewer_settings'] = get_user_settings_dict(session, assignment.get('reviewer').user_id)
+		assignment['article'] = get_article_by_id_preview(session, assignment['submission_id'])
+		assignment['title'] = get_article_settings(session, assignment['submission_id'], 'title')
+	return review_assignments
+
+def get_uncompleted_reviews(session):
+	review_assignments = all_as_dict(session.query(ojs.ReviewAssignment).filter(ojs.ReviewAssignment.date_confirmed != None, ojs.ReviewAssignment.date_completed == None, ojs.ReviewAssignment.date_reminded == None, ojs.ReviewAssignment.declined == 0, ojs.ReviewAssignment.replaced == 0, ojs.ReviewAssignment.cancelled == 0).order_by(ojs.ReviewAssignment.date_due))
+	for assignment in review_assignments:
+		assignment['reviewer_settings'] = get_user_settings_dict(session, assignment.get('reviewer').user_id)
+		assignment['article'] = get_article_by_id_preview(session, assignment['submission_id'])
+		assignment['title'] = get_article_settings(session, assignment['submission_id'], 'title')
+	return review_assignments
+
+def get_access_key(session, review_id):
+	try:
+		return session.query(ojs.AccessKey).filter(context="ReviewContext", assoc_id=review_id).one()
+	except NoResultFound:
+		return None
+
 def get_article_comments(session, article_id=None, date=None, article_ids=None, count=None):
 
 	filters = [ojs.ArticleComment.comment_type == 4]
@@ -1066,3 +1109,56 @@ def add_collection(session, data):
 	session.flush()
 
 	return new_collection
+
+def update_or_create_journal_setting(session, setting_name, setting_value, locale='en_US', setting_type='string', journal_id=1):
+
+	try:
+		setting = session.query(ojs.JournalSetting).filter(ojs.JournalSetting.journal_id == journal_id, ojs.JournalSetting.setting_name == setting_name).one()
+		setattr(setting, 'setting_value', setting_value)
+		session.flush()
+		return setting
+
+	except NoResultFound:
+		kwargs = {
+				'journal_id': journal_id,
+				'setting_name': setting_name,
+				'setting_value': setting_value,
+				'locale': locale,
+				'setting_type': setting_type,
+			}
+		new_setting = ojs.JournalSetting(**kwargs)
+		session.add(new_setting)
+		session.flush()
+
+	return new_setting
+
+def create_section(session, section_dict):
+	new_section = ojs.Section(**section_dict)
+	session.add(new_section)
+	session.flush()
+	print new_section.section_id
+	return new_section.section_id
+
+def add_section_settings(session, section_settings_dict, section_id):
+	for k,v in section_settings_dict.iteritems():
+		kwargs = {
+				'section_id': section_id,
+				'setting_name': k,
+				'setting_value': v,
+				'locale': 'en_US',
+				'setting_type': 'string', # only for introduced settings, so fairly safe but only if we do validation on our end
+		}
+		new_setting = ojs.SectionSettings(**kwargs)
+		session.add(new_setting)
+		session.flush()
+
+def insert_email_log(session, log_dict):
+	new_entry = ojs.EmailLog(**log_dict)
+	session.add(new_entry)
+	session.flush()
+
+def mark_reminder_sent(session, review_id, date_sent):
+	assignment = session.query(ojs.ReviewAssignment).filter(ojs.ReviewAssignment.review_id == review_id).one()
+	setattr(assignment, 'date_reminded', date_sent)
+	setattr(assignment, 'reminder_was_automatic', 1)
+	session.flush()
