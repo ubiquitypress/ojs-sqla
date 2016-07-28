@@ -526,6 +526,10 @@ class CollectionUser(Base):
     role_name = Column(String(50), nullable=False, server_default=u"'editor'")
     order = Column(Integer, nullable=True)
 
+    __mapper_args__ = {
+        "order_by": order
+    }
+
 
 class Comment(Base):
     __tablename__ = 'comments'
