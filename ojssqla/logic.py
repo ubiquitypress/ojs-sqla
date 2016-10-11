@@ -317,8 +317,8 @@ def get_article_figure(session, article_id, orig_filename):
 def get_article_sections(session):
 	return session.query(ojs.Section).order_by(ojs.Section.seq)
 
-def get_section_settings(session, section_id):
-	return session.query(ojs.SectionSettings).filter(ojs.SectionSettings.section_id == section_id)
+def get_section_settings(session, section_id, locale='en_US'):
+	return session.query(ojs.SectionSettings).filter(ojs.SectionSettings.section_id == section_id, ojs.SectionSettings.locale == locale)
 
 def get_section(session, section_id):
 	try:
