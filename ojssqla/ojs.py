@@ -1,9 +1,21 @@
 # coding: utf-8
-from sqlalchemy import BigInteger, Column, Date, DateTime, Float, Index, Integer, SmallInteger, String, Table, Text, ForeignKey, Boolean
+from sqlalchemy import (
+    BigInteger,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    Index,
+    Integer,
+    SmallInteger,
+    String,
+    Table,
+    Text,
+    ForeignKey,
+)
 from sqlalchemy.dialects.mysql.base import BIT
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref, column_property
-
 
 
 Base = declarative_base()
@@ -11,52 +23,133 @@ metadata = Base.metadata
 
 
 class AccessKey(Base):
+
     __tablename__ = 'access_keys'
     __table_args__ = (
         Index('access_keys_hash', 'key_hash', 'user_id', 'context'),
     )
 
-    access_key_id = Column(BigInteger, primary_key=True)
-    context = Column(String(40), nullable=False)
-    key_hash = Column(String(40), nullable=False)
-    user_id = Column(BigInteger, nullable=False)
-    assoc_id = Column(BigInteger)
-    expiry_date = Column(DateTime, nullable=False)
-
-class AnnouncementSettings(Base):
-    __tablename__ = 'announcement_settings'
-    __table_args__ = (
-        Index('announcement_settings_pkey', 'announcement_id', 'locale', 'setting_name'),
+    access_key_id = Column(
+        BigInteger,
+        primary_key=True
+    )
+    context = Column(
+        String(40),
+        nullable=False
+    )
+    key_hash = Column(
+        String(40),
+        nullable=False
+    )
+    user_id = Column(
+        BigInteger,
+        nullable=False
+    )
+    assoc_id = Column(
+        BigInteger
+    )
+    expiry_date = Column(
+        DateTime,
+        nullable=False
     )
 
-    announcement_id = Column(BigInteger, nullable=False, primary_key=True)
-    locale = Column(String(5), nullable=False, server_default=u"''", primary_key=True)
-    setting_name = Column(String(255), nullable=False, primary_key=True)
-    setting_value = Column(Text)
-    setting_type = Column(String(6), nullable=False)
+
+class AnnouncementSettings(Base):
+
+    __tablename__ = 'announcement_settings'
+    __table_args__ = (
+        Index(
+            'announcement_settings_pkey',
+            'announcement_id',
+            'locale',
+            'setting_name',
+        ),
+    )
+
+    announcement_id = Column(
+        BigInteger,
+        nullable=False,
+        primary_key=True,
+    )
+    locale = Column(
+        String(5),
+        nullable=False,
+        server_default=u"''",
+        primary_key=True,
+    )
+    setting_name = Column(
+        String(255),
+        nullable=False,
+        primary_key=True,
+    )
+    setting_value = Column(
+        Text
+    )
+    setting_type = Column(
+        String(6),
+        nullable=False,
+    )
 
 
 class AnnouncementTypeSettings(Base):
+
     __tablename__ = 'announcement_type_settings'
     __table_args__ = (
-        Index('announcement_type_settings_pkey', 'type_id', 'locale', 'setting_name'),
+        Index(
+            'announcement_type_settings_pkey',
+            'type_id',
+            'locale',
+            'setting_name'
+        ),
     )
 
-    type_id = Column(BigInteger, nullable=False, primary_key=True)
-    locale = Column(String(5), nullable=False, server_default=u"''", primary_key=True)
-    setting_name = Column(String(255), nullable=False, primary_key=True)
-    setting_value = Column(Text)
-    setting_type = Column(String(6), nullable=False)
+    type_id = Column(
+        BigInteger,
+        nullable=False,
+        primary_key=True,
+    )
+    locale = Column(
+        String(5),
+        nullable=False,
+        server_default=u"''",
+        primary_key=True,
+    )
+    setting_name = Column(
+        String(255),
+        nullable=False,
+        primary_key=True
+    )
+    setting_value = Column(
+        Text
+    )
+    setting_type = Column(
+        String(6),
+        nullable=False,
+    )
+
 
 class AnnouncementType(Base):
+
     __tablename__ = 'announcement_types'
     __table_args__ = (
-        Index('announcement_types_assoc', 'assoc_type', 'assoc_id'),
+        Index(
+            'announcement_types_assoc',
+            'assoc_type',
+            'assoc_id',
+        ),
     )
 
-    type_id = Column(BigInteger, primary_key=True)
-    assoc_type = Column(SmallInteger)
-    assoc_id = Column(BigInteger, nullable=False)
+    type_id = Column(
+        BigInteger,
+        primary_key=True,
+    )
+    assoc_type = Column(
+        SmallInteger,
+    )
+    assoc_id = Column(
+        BigInteger,
+        nullable=False,
+    )
 
 
 class Announcement(Base):
@@ -182,7 +275,6 @@ class ArticleSearchObject(Base):
     assoc_id = Column(BigInteger)
 
 
-
 class ArticleSupplementaryFile(Base):
     __tablename__ = 'article_supplementary_files'
 
@@ -200,7 +292,9 @@ class ArticleSupplementaryFile(Base):
     settings = relationship(
         "ArticleSuppFileSettings",
         backref="ArticleSupplementaryFile",
-        lazy='joined')
+        lazy='subquery',
+    )
+
 
 class ArticleSuppFileSettings(Base):
 
@@ -211,7 +305,6 @@ class ArticleSuppFileSettings(Base):
     setting_name = Column(String(255), nullable=False, primary_key=True)
     setting_value = Column(Text)
     setting_type = Column(String(6), nullable=False)
-
 
 
 class ArticleXmlGalley(Base):
@@ -255,36 +348,42 @@ class Article(Base):
         "PublishedArticle",
         uselist=False,
         backref="article",
-        lazy='joined')
+        lazy='subquery',
+    )
 
     settings = relationship(
         "ArticleSetting",
         backref="Article",
-        lazy='joined')
+        lazy='subquery',
+    )
 
     authors = relationship(
         "Author",
         backref="Article",
-        lazy='joined',
+        lazy='subquery',
         order_by="Author.seq")
 
     galleys = relationship(
         "ArticleGalley",
         backref="Article",
-        lazy='joined',
+        lazy='subquery',
         order_by="ArticleGalley.seq")
 
     taxonomies = relationship(
         "TaxonomyArticle",
         backref="Article",
-        lazy='joined')
+        lazy='subquery',
+    )
 
     decisions = relationship(
         "EditDecision",
         backref="Article",
-        lazy="joined")
+        lazy='subquery',
+    )
+
 
 class Issue(Base):
+
     __tablename__ = 'issues'
 
     issue_id = Column(BigInteger, primary_key=True)
@@ -309,25 +408,50 @@ class Issue(Base):
     galleys = relationship(
         "IssueGalley",
         backref="Issue",
-        lazy='joined',
+        lazy='subquery',
         order_by="IssueGalley.seq")
 
 
 class PublishedArticle(Base):
+
     __tablename__ = 'published_articles'
 
-    published_article_id = Column(BigInteger, primary_key=True)
-    article_id = Column(BigInteger, ForeignKey(Article.article_id), nullable=False, unique=True) # lying to SQLAlchemy. no fkey exists.
-    issue_id = Column(BigInteger, ForeignKey(Issue.issue_id), nullable=False, index=True)
-    date_published = Column(DateTime)
-    seq = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
-    access_status = Column(Integer, nullable=False, server_default=u"'0'")
-
+    published_article_id = Column(
+        BigInteger,
+        primary_key=True
+    )
+    article_id = Column(  # Lying to SQLAlchemy. no fkey exists.
+        BigInteger,
+        ForeignKey(Article.article_id),
+        nullable=False,
+        unique=True,
+    )
+    issue_id = Column(
+        BigInteger,
+        ForeignKey(Issue.issue_id),
+        nullable=False,
+        index=True,
+    )
+    date_published = Column(
+        DateTime,
+    )
+    seq = Column(
+        Float(asdecimal=True),
+        nullable=False,
+        server_default=u"'0'",
+    )
+    access_status = Column(
+        Integer,
+        nullable=False,
+        server_default=u"'0'",
+    )
     issue = relationship(
         "Issue",
         uselist=False,
         backref="Issue",
-        lazy='joined')
+        lazy='subquery',
+    )
+
 
 class ArticleSetting(Base):
     __tablename__ = 'article_settings'
@@ -355,7 +479,9 @@ class ArticleGalley(Base):
         "ArticleFile",
         uselist=False,
         backref="ArticleFile",
-        lazy='joined')
+        lazy='subquery',
+    )
+
 
 class AuthSource(Base):
     __tablename__ = 'auth_sources'
@@ -375,6 +501,7 @@ class AuthorSetting(Base):
     setting_name = Column(String(255), nullable=False, primary_key=True)
     setting_value = Column(Text)
     setting_type = Column(String(6), nullable=False)
+
 
 class Author(Base):
     __tablename__ = 'authors'
@@ -505,6 +632,7 @@ class Collection(Base):
 
     users = relationship(u'CollectionUser', primaryjoin='Collection.id == CollectionUser.collection_id', order_by='CollectionUser.order')
     articles = relationship(u'CollectionArticle', primaryjoin='Collection.id == CollectionArticle.collection_id', order_by='CollectionArticle.order')
+
 
 class CollectionArticle(Base):
     __tablename__ = 'collection_article'
@@ -675,7 +803,7 @@ class EditAssignment(Base):
         "User",
         uselist=False,
         backref="User",
-        lazy='joined',
+        lazy='subquery',
         primaryjoin='EditAssignment.editor_id == User.user_id')
 
 
@@ -731,6 +859,7 @@ class EmailTemplate(Base):
     assoc_type = Column(BigInteger, server_default=u"'0'")
     assoc_id = Column(BigInteger, server_default=u"'0'")
     enabled = Column(Integer, nullable=False, server_default=u"'1'")
+
 
 class EmailTemplateData(Base):
     __tablename__ = 'email_templates_data'
@@ -881,6 +1010,7 @@ class Gift(Base):
     gift_note = Column(Text)
     notes = Column(Text)
 
+
 class GroupSettings(Base):
     __tablename__ = 'group_settings'
     __table_args__ = (
@@ -891,6 +1021,7 @@ class GroupSettings(Base):
     setting_name = Column(String(255), nullable=False, primary_key=True)
     setting_value = Column(Text)
     setting_type = Column(String(6), nullable=False)
+
 
 class Group(Base):
     __tablename__ = 'groups'
@@ -961,6 +1092,7 @@ class IssueGalley(Base):
     file_id = Column(BigInteger, nullable=False)
     label = Column(String(32))
     seq = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
+
 
 class IssueSettings(Base):
     __tablename__ = 'issue_settings'
@@ -1230,7 +1362,8 @@ class ReviewAssignment(Base):
         "User",
         primaryjoin='ReviewAssignment.reviewer_id == User.user_id',
         uselist=False,
-        lazy='joined')
+        lazy='subquery',
+    )
 
 
 class ReviewFormElementSettings(Base):
@@ -1244,7 +1377,6 @@ class ReviewFormElementSettings(Base):
     setting_name = Column(String(255), nullable=False, primary_key=True)
     setting_value = Column(Text)
     setting_type = Column(String(6), nullable=False)
-   
 
 
 class ReviewFormElement(Base):
@@ -1273,7 +1405,8 @@ class ReviewFormResponses(Base):
         "ReviewFormElement",
         primaryjoin='ReviewFormResponses.review_form_element_id == ReviewFormElement.review_form_element_id',
         uselist=False,
-        lazy='joined')
+        lazy='subquery',
+    )
 
 
 class ReviewFormSettings(Base):
@@ -1282,10 +1415,11 @@ class ReviewFormSettings(Base):
        Index('review_form_settings_pkey', 'review_form_id', 'locale', 'setting_name'),
     )
     review_form_id = Column(BigInteger, nullable=False, index=True, primary_key=True)
-    locale =  Column(String(5), nullable=False, server_default=u"''", primary_key=True)
+    locale = Column(String(5), nullable=False, server_default=u"''", primary_key=True)
     setting_name = Column(String(255), nullable=False, primary_key=True)
     setting_value = Column(Text)
     setting_type = Column(String(6), nullable=False)
+
 
 class ReviewForm(Base):
     __tablename__ = 'review_forms'
@@ -1366,7 +1500,7 @@ t_scheduled_tasks = Table(
 
 
 class SectionEditor(Base):
-    __tablename__  = 'section_editors'
+    __tablename__ = 'section_editors'
 
     journal_id = Column(ForeignKey('journal.journal_id', deferrable=True, initially=u'DEFERRED'), nullable=False, index=True, primary_key=True)
     section_id = Column(ForeignKey('sections.section_id', deferrable=True, initially=u'DEFERRED'), nullable=False, index=True, primary_key=True)
@@ -1376,7 +1510,7 @@ class SectionEditor(Base):
 
 
 class SectionSettings(Base):
-    __tablename__  = 'section_settings'
+    __tablename__ = 'section_settings'
     __table_args__ = (
         Index('section_settings_pkey', 'section_id', 'locale', 'setting_name'),
     )
@@ -1474,6 +1608,7 @@ class StaticPageSetting(Base):
     setting_name = Column(String(255), nullable=False, primary_key=True)
     setting_value = Column(String)
     setting_type = Column(String(6), nullable=False)
+
 
 class StaticPage(Base):
     __tablename__ = 'static_pages'
@@ -1586,14 +1721,38 @@ t_usage_stats_temporary_records = Table(
     Column('file_type', Integer)
 )
 
+
 class UserInterests(Base):
     __tablename__ = 'user_interests'
 
-    user_id = Column(ForeignKey('users.user_id', deferrable=True, initially=u'DEFERRED'), nullable=False, primary_key=True)
-    controlled_vocab_entry_id = Column(ForeignKey(ControlledVocabEntry.controlled_vocab_entry_id, deferrable=True, initially=u'DEFERRED'), nullable=False, primary_key=True)
+    user_id = Column(
+        ForeignKey('users.user_id', deferrable=True, initially=u'DEFERRED'),
+        nullable=False,
+        primary_key=True,
+    )
+    controlled_vocab_entry_id = Column(
+        ForeignKey(
+            ControlledVocabEntry.controlled_vocab_entry_id,
+            deferrable=True,
+            initially=u'DEFERRED'
+        ),
+        nullable=False,
+        primary_key=True,
+    )
 
-    controlled_vocab = relationship(u'ControlledVocabEntry', primaryjoin='UserInterests.controlled_vocab_entry_id == ControlledVocabEntry.controlled_vocab_entry_id', lazy='joined')
-    Column(ForeignKey(ControlledVocabEntry.controlled_vocab_entry_id, deferrable=True, initially=u'DEFERRED'), nullable=False, primary_key=True)
+    controlled_vocab = relationship(
+        u'ControlledVocabEntry',
+        primaryjoin='UserInterests.controlled_vocab_entry_id == '
+                    'ControlledVocabEntry.controlled_vocab_entry_id',
+        lazy='joined',
+    )
+    Column(ForeignKey(
+        ControlledVocabEntry.controlled_vocab_entry_id,
+        deferrable=True,
+        initially=u'DEFERRED'),
+        nullable=False,
+        primary_key=True,
+    )
 
 
 '''
@@ -1604,6 +1763,7 @@ t_user_interests = Table(
     Index('u_e_pkey', 'user_id', 'controlled_vocab_entry_id')
 )
 '''
+
 
 class UserSetting(Base):
     __tablename__ = 'user_settings'
@@ -1653,6 +1813,7 @@ class User(Base):
     roles = relationship(u'Roles', primaryjoin='User.user_id == Roles.user_id', lazy='joined')
     interests = relationship(u'UserInterests', primaryjoin='User.user_id == UserInterests.user_id', lazy='joined')
 
+
 class GroupMemberships(Base):
     __tablename__ = 'group_memberships'
     __table_args__ = (
@@ -1664,7 +1825,6 @@ class GroupMemberships(Base):
     seq = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
 
     user = relationship(u'User', primaryjoin='GroupMemberships.user_id == User.user_id')
-
 
 
 t_versions = Table(
@@ -1683,6 +1843,7 @@ t_versions = Table(
     Index('versions_pkey', 'product_type', 'product', 'major', 'minor', 'revision', 'build')
 )
 
+
 class Taxonomy(Base):
     __tablename__ = 'taxonomy'
 
@@ -1694,6 +1855,7 @@ class Taxonomy(Base):
     editors = relationship(u'TaxonomyEditor')
     articles = relationship(u'TaxonomyArticle')
 
+
 class TaxonomyEditor(Base):
     __tablename__ = 'taxonomy_editor'
 
@@ -1703,7 +1865,9 @@ class TaxonomyEditor(Base):
 
     user = relationship(u'User')
 
+
 class TaxonomyArticle(Base):
+
     __tablename__ = 'taxonomy_article'
 
     id = Column(BigInteger, primary_key=True)
