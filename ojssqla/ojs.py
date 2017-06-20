@@ -158,46 +158,120 @@ class Announcement(Base):
         Index('announcements_assoc', 'assoc_type', 'assoc_id'),
     )
 
-    announcement_id = Column(BigInteger, primary_key=True)
-    assoc_type = Column(SmallInteger)
-    assoc_id = Column(BigInteger, nullable=False)
-    type_id = Column(BigInteger)
-    date_expire = Column(DateTime)
-    date_posted = Column(DateTime, nullable=False)
+    announcement_id = Column(
+        BigInteger,
+        primary_key=True,
+    )
+    assoc_type = Column(
+        SmallInteger,
+    )
+    assoc_id = Column(
+        BigInteger,
+        nullable=False,
+    )
+    type_id = Column(
+        BigInteger,
+    )
+    date_expire = Column(
+        DateTime,
+    )
+    date_posted = Column(
+        DateTime,
+        nullable=False,
+    )
 
 
 class ArticleComment(Base):
+
     __tablename__ = 'article_comments'
 
-    comment_id = Column(BigInteger, primary_key=True)
-    comment_type = Column(BigInteger)
-    role_id = Column(BigInteger, nullable=False)
-    article_id = Column(BigInteger, nullable=False, index=True)
-    assoc_id = Column(BigInteger, nullable=False)
-    author_id = Column(BigInteger, nullable=False)
-    comment_title = Column(String(255), nullable=False)
-    comments = Column(Text)
-    date_posted = Column(DateTime)
-    date_modified = Column(DateTime)
-    viewable = Column(Integer)
+    comment_id = Column(
+        BigInteger,
+        primary_key=True,
+    )
+    comment_type = Column(
+        BigInteger,
+    )
+    role_id = Column(
+        BigInteger,
+        nullable=False,
+    )
+    article_id = Column(
+        BigInteger,
+        nullable=False,
+        index=True,
+    )
+    assoc_id = Column(
+        BigInteger,
+        nullable=False,
+    )
+    author_id = Column(
+        BigInteger,
+        nullable=False,
+    )
+    comment_title = Column(
+        String(255),
+        nullable=False,
+    )
+    comments = Column(
+        Text,
+    )
+    date_posted = Column(
+        DateTime,
+    )
+    date_modified = Column(
+        DateTime,
+    )
+    viewable = Column(
+        Integer,
+    )
 
 
 class ArticleEventLog(Base):
+
     __tablename__ = 'article_event_log'
 
-    log_id = Column(BigInteger, primary_key=True)
-    article_id = Column(BigInteger, ForeignKey('articles.article_id'), nullable=False, primary_key=True)
-    user_id = Column(BigInteger, nullable=False)
-    date_logged = Column(DateTime, nullable=False)
-    ip_address = Column(String(15), nullable=False)
-    log_level = Column(String(1))
-    event_type = Column(BigInteger)
-    assoc_type = Column(BigInteger)
-    assoc_id = Column(BigInteger)
-    message = Column(Text)
+    log_id = Column(
+        BigInteger,
+        primary_key=True
+    )
+    article_id = Column(
+        BigInteger,
+        ForeignKey('articles.article_id'),
+        nullable=False,
+        primary_key=True,
+    )
+    user_id = Column(
+        BigInteger,
+        nullable=False,
+    )
+    date_logged = Column(
+        DateTime,
+        nullable=False,
+    )
+    ip_address = Column(
+        String(15),
+        nullable=False,
+    )
+    log_level = Column(
+        String(1),
+    )
+    event_type = Column(
+        BigInteger,
+    )
+    assoc_type = Column(
+        BigInteger,
+    )
+    assoc_id = Column(
+        BigInteger,
+    )
+    message = Column(
+        Text,
+    )
 
 
 class ArticleFile(Base):
+
     __tablename__ = 'article_files'
 
     file_id = Column(BigInteger, primary_key=True, nullable=False)

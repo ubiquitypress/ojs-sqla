@@ -10,11 +10,11 @@ def readme():
 
 kwargs = {
     'name': 'ojssqla',
-    'version': '0.0.1',
+    'version': '0.0.2',
     'description': "Comfortable clothing for PKPs OJS",
     'keywords': 'Ubiquity Press PKP OJS',
     'author': 'Andy Byers',
-    'author_email': 'andy.byers@ubiquitypress.com',
+    'author_email': 'tech@ubiquitypress.com',
     'url': 'https://github.com/ubiquitypress/ojs-sqla',
     'license': 'GPL 2',
     'packages': ['ojssqla'],
