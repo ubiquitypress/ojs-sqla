@@ -422,7 +422,7 @@ class Article(Base):
         "PublishedArticle",
         uselist=False,
         backref="article",
-        lazy='subquery',
+        lazy='joined',
     )
 
     settings = relationship(
@@ -523,7 +523,7 @@ class PublishedArticle(Base):
         "Issue",
         uselist=False,
         backref="Issue",
-        lazy='subquery',
+        lazy='joined',
     )
 
 
