@@ -1,22 +1,27 @@
+import logging
 import os
 import sys
 
-import ojs
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine, MetaData, inspect, Table, Column, Boolean, DateTime, Float
+from sqlalchemy import create_engine, MetaData, inspect, Table, Column, Boolean, DateTime, Float, Integer
 from sqlalchemy.types import TIMESTAMP as POSTGRES_TIMESTAMP, TEXT as POSTGRES_TEXT, VARCHAR as POSTGRES_VARCHAR
 from sqlalchemy.dialects.postgresql import BIT as POSTGRES_BIT
-from sqlalchemy.dialects.mysql.base import TINYINT, VARCHAR, DATETIME, TIMESTAMP, DOUBLE, TEXT, BIT
+from sqlalchemy.dialects.mysql.base import TINYINT, VARCHAR, DATETIME, TIMESTAMP, DOUBLE, TEXT, BIT, LONGTEXT
 from sqlalchemy.ext.declarative import declarative_base
 
 from sshtunnel import SSHTunnelForwarder
+
 
 username = os.getenv('MYSQL_USER')
 password = os.getenv('MYSQL_PASSWORD')
 host = os.getenv('MYSQL_HOST')
 port = int(os.getenv('MYSQL_PORT', '3306'))
 localhost = '127.0.0.1'
+
+logger = logging.getLogger('sqlalchemy.pool.QueuePool')
+ch = logging.StreamHandler()
+logger.addHandler(ch)
 
 class Tunnel(object):
     def __init__(self,
@@ -50,13 +55,13 @@ class Tunnel(object):
         self._tunnel.stop()
 
 
-def copy_table_schemas_to_postgresdb(mysql_base, postgres_engine):
+def copy_table_schemas_to_postgresdb(mysql_metadata, postgres_engine):
     
     postgres_engine._metadata = MetaData(bind=postgres_engine)
-    
-    for klass in mysql_base.classes:
-        table = Table(klass.__table__.name, postgres_engine._metadata)
-        for column in klass.__table__.columns:
+
+    for name, klass in mysql_metadata.tables.items():
+        table = Table(klass.name, postgres_engine._metadata)
+        for column in klass.columns:
             if isinstance(column.type, TEXT):
                 table.append_column(Column(column.name, POSTGRES_TEXT(collation=''), nullable=column.nullable))
             elif isinstance(column.type, VARCHAR):
@@ -71,33 +76,49 @@ def copy_table_schemas_to_postgresdb(mysql_base, postgres_engine):
                 table.append_column(Column(column.name, Float(), nullable=column.nullable))
             elif isinstance(column.type, BIT):
                 table.append_column(Column(column.name, POSTGRES_BIT(length=column.type.length), nullable=column.nullable))
+            elif isinstance(column.type, LONGTEXT):
+                table.append_column(Column(column.name, POSTGRES_TEXT(collation=''), nullable=column.nullable))
             else:
                 table.append_column(column.copy())
                 
-        print table.name
+        print 'create', table.name
         table.create()
 
 def quick_mapper(table):
     Base = declarative_base()
+    
+    pk_count = len([c for c in table.columns if c.primary_key])
+    if pk_count == 0:
+        primary_columns = [column.name for column in table.columns if 'id' in column.name]
+        if primary_columns:
+            pk_name = primary_columns[0]
+        else:
+            pk_name = [column.name for column in table.columns][0]
+            
+        class GenericMapper(Base):
+            __table__ = table
+            __mapper_args__ = {
+                'primary_key': [getattr(table.c, pk_name)]
+            }
+        return GenericMapper
+        
     class GenericMapper(Base):
         __table__ = table
+
     return GenericMapper
     
-def copy_table_data_to_postgresdb(mysql_base, mysql_engine, postgres_engine):
-    postgres_engine.execute("SET CLIENT_ENCODING TO 'LATIN1';")
+def copy_table_data_to_postgresdb(mysql_metadata, mysql_engine, postgres_engine):
     PostgresSession = sessionmaker(bind=postgres_engine, autoflush=False)
     postgres_session = PostgresSession()
     MySQLSession = sessionmaker(bind=mysql_engine)
     mysql_session = MySQLSession()
-
     
-    
-    for klass in mysql_base.classes:
-        print klass.__table__.name
-        dest_table = Table(klass.__table__.name, MetaData(bind=postgres_engine), autoload=True)
+    for name, klass in mysql_metadata.tables.items():
+        print 'copy', klass.name
+        dest_table = Table(klass.name, MetaData(bind=postgres_engine), autoload=True)
         dest_columns = dest_table.columns.keys()
     
-        table = Table(klass.__table__.name, MetaData(bind=mysql_engine), autoload=True)
+        table = Table(klass.name, MetaData(bind=mysql_engine), autoload=True)
         NewRecord = quick_mapper(table)
 
         for record in mysql_session.query(table).all():
@@ -136,11 +157,11 @@ def copy_from_mysqldb_to_postgresdb(db_name, from_host, to_host):
             )
         )
         
-        mysql_base = automap_base()
-        mysql_base.prepare(mysql_engine, reflect=True)
+        mysql_metadata = MetaData()
+        mysql_metadata.reflect(mysql_engine)
     
-        copy_table_schemas_to_postgresdb(mysql_base, postgres_engine)
-        copy_table_data_to_postgresdb(mysql_base, mysql_engine, postgres_engine)
+        copy_table_schemas_to_postgresdb(mysql_metadata, postgres_engine)
+        copy_table_data_to_postgresdb(mysql_metadata, mysql_engine, postgres_engine)
     
 
     
