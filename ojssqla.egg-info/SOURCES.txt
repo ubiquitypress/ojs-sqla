@@ -2,6 +2,7 @@ MANIFEST.in
 README.md
 ojssqla/__init__.py
 ojssqla/logic.py
+ojssqla/mysql_to_postgresql.py
 ojssqla/ojs.py
 ojssqla/scraper.py
 ojssqla.egg-info/PKG-INFO
