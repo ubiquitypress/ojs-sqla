@@ -1040,6 +1040,9 @@ def get_email_template(session, email_key):
                    you can use to query the db with
          email_key - a string representing the primary key of the email
                      template data table which we're querying
+       Returns:
+         A row in the table representing the email template, in dict format
+         with each key/value pair representing a column in the row
     """
 
     query_result = session.query(
