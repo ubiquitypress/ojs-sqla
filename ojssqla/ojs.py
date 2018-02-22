@@ -963,7 +963,7 @@ class EmailTemplatesDefaultData(Base):
         Index('email_templates_default_data_pkey', 'email_key', 'locale'),
         PrimaryKeyConstraint('email_key', 'locale')
     )
-    
+
     email_key = Column(String(64), nullable=False, index=True)
     locale = Column(String(5), nullable=False, server_default=u"'en_US'")
     subject = Column(String(120), nullable=False)

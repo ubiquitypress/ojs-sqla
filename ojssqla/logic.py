@@ -1033,9 +1033,26 @@ def get_article_comments(session, article_id=None, date=None, article_ids=None, 
 #   return all_as_dict(session.query(ojs.ArticleComment).filter(ojs.ArticleComment.article_id == article_id, ojs.ArticleComment.comment_type == 4))
 
 def get_email_template(session, email_key):
-    query_result = session.query(ojs.EmailTemplateData).filter(ojs.EmailTemplateData.email_key == email_key)
+    """Get the email template from the database with email_key
+
+       Params:
+         session - sqlalchemy session representing a connection to the db which
+                   you can use to query the db with
+         email_key - a string representing the primary key of the email
+                     template data table which we're querying
+    """
+
+    query_result = session.query(
+        ojs.EmailTemplateData
+    ).filter(
+        ojs.EmailTemplateData.email_key == email_key
+    )
     if query_result.count() == 0:
-        query_result = session.query(ojs.EmailTemplatesDefaultData).filter(ojs.EmailTemplatesDefaultData.email_key == email_key)
+        query_result = session.query(
+            ojs.EmailTemplatesDefaultData
+        ).filter(
+            ojs.EmailTemplatesDefaultData.email_key == email_key
+        )
     
     return as_dict(query_result.one())
 
