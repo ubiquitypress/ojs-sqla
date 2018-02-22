@@ -10,7 +10,7 @@ def readme():
 
 kwargs = {
     'name': 'ojssqla',
-    'version': '0.0.2',
+    'version': '0.0.3',
     'description': "Comfortable clothing for PKPs OJS",
     'keywords': 'Ubiquity Press PKP OJS',
     'author': 'Andy Byers',
