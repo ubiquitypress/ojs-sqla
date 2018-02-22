@@ -958,6 +958,8 @@ class EmailTemplatesDefault(Base):
     to_role_id = Column(BigInteger)
 
 class EmailTemplatesDefaultData(Base):
+    """Represents the default email template data"""
+
     __tablename__ = 'email_templates_default_data'
     __table_args__ = (
         Index('email_templates_default_data_pkey', 'email_key', 'locale'),
