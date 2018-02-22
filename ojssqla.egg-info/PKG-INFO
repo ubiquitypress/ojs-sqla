@@ -1,11 +1,12 @@
 Metadata-Version: 1.0
 Name: ojssqla
-Version: 0.0.1
+Version: 0.0.2
 Summary: Comfortable clothing for PKPs OJS
 Home-page: https://github.com/ubiquitypress/ojs-sqla
 Author: Andy Byers
-Author-email: andy.byers@ubiquitypress.com
+Author-email: tech@ubiquitypress.com
 License: GPL 2
+Description-Content-Type: UNKNOWN
 Description: UNKNOWN
 Keywords: Ubiquity Press PKP OJS
 Platform: UNKNOWN

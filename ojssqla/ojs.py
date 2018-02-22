@@ -12,6 +12,7 @@ from sqlalchemy import (
     Table,
     Text,
     ForeignKey,
+    PrimaryKeyConstraint,
 )
 from sqlalchemy.dialects.mysql.base import BIT
 from sqlalchemy.ext.declarative import declarative_base
@@ -956,16 +957,20 @@ class EmailTemplatesDefault(Base):
     from_role_id = Column(BigInteger)
     to_role_id = Column(BigInteger)
 
+class EmailTemplatesDefaultData(Base):
+    """Represents the default email template data"""
 
-t_email_templates_default_data = Table(
-    'email_templates_default_data', metadata,
-    Column('email_key', String(64), nullable=False),
-    Column('locale', String(5), nullable=False, server_default=u"'en_US'"),
-    Column('subject', String(120), nullable=False),
-    Column('body', Text),
-    Column('description', Text),
-    Index('email_templates_default_data_pkey', 'email_key', 'locale')
-)
+    __tablename__ = 'email_templates_default_data'
+    __table_args__ = (
+        Index('email_templates_default_data_pkey', 'email_key', 'locale'),
+        PrimaryKeyConstraint('email_key', 'locale')
+    )
+
+    email_key = Column(String(64), nullable=False, index=True)
+    locale = Column(String(5), nullable=False, server_default=u"'en_US'")
+    subject = Column(String(120), nullable=False)
+    body = Column(Text)
+    description = Column(Text)
 
 
 class EventLog(Base):
