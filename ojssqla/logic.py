@@ -984,28 +984,101 @@ def get_review_details(session, article_id):
 
     return review_assignments
 
+
 def get_uncomplete_review_details(session):
-    review_assignments = all_as_dict(session.query(ojs.ReviewAssignment).filter(ojs.ReviewAssignment.date_completed == None, ojs.ReviewAssignment.date_reminded == None, ojs.ReviewAssignment.declined == 0, ojs.ReviewAssignment.replaced == 0, ojs.ReviewAssignment.cancelled == 0).order_by(ojs.ReviewAssignment.date_due))
+    review_assignments = all_as_dict(
+        session.query(
+            ojs.ReviewAssignment
+        ).filter(
+            ojs.ReviewAssignment.date_completed == None,
+            ojs.ReviewAssignment.date_reminded == None,
+            ojs.ReviewAssignment.declined == 0,
+            ojs.ReviewAssignment.replaced == 0,
+            ojs.ReviewAssignment.cancelled == 0
+        ).order_by(
+            ojs.ReviewAssignment.date_due
+        )
+    )
+
     for assignment in review_assignments:
-        assignment['reviewer_settings'] = get_user_settings_dict(session, assignment.get('reviewer').user_id)
-        assignment['article'] = get_article_by_id_preview(session, assignment['submission_id'])
-        assignment['title'] = get_article_settings(session, assignment['submission_id'], 'title')
+        assignment['reviewer_settings'] = get_user_settings_dict(
+            session,
+            assignment.get('reviewer').user_id
+        )
+        assignment['article'] = get_article_by_id_preview(
+            session,
+            assignment['submission_id']
+        )
+        assignment['title'] = get_article_settings(
+            session,
+            assignment['submission_id'],
+            'title'
+        )
     return review_assignments
 
+
 def get_unconfirmed_reviews(session):
-    review_assignments = all_as_dict(session.query(ojs.ReviewAssignment).filter(ojs.ReviewAssignment.date_confirmed == None, ojs.ReviewAssignment.date_completed == None, ojs.ReviewAssignment.date_reminded == None, ojs.ReviewAssignment.declined == 0, ojs.ReviewAssignment.replaced == 0, ojs.ReviewAssignment.cancelled == 0).order_by(ojs.ReviewAssignment.date_due))
+    review_assignments = all_as_dict(
+        session.query(
+            ojs.ReviewAssignment
+        ).filter(
+            ojs.ReviewAssignment.date_confirmed == None,
+            ojs.ReviewAssignment.date_completed == None,
+            ojs.ReviewAssignment.date_reminded == None,
+            ojs.ReviewAssignment.declined == 0,
+            ojs.ReviewAssignment.replaced == 0,
+            ojs.ReviewAssignment.cancelled == 0
+        ).order_by(
+            ojs.ReviewAssignment.date_due
+        )
+    )
+
     for assignment in review_assignments:
-        assignment['reviewer_settings'] = get_user_settings_dict(session, assignment.get('reviewer').user_id)
-        assignment['article'] = get_article_by_id_preview(session, assignment['submission_id'])
-        assignment['title'] = get_article_settings(session, assignment['submission_id'], 'title')
+        assignment['reviewer_settings'] = get_user_settings_dict(
+            session,
+            assignment.get('reviewer').user_id
+        )
+        assignment['article'] = get_article_by_id_preview(
+            session,
+            assignment['submission_id']
+        )
+        assignment['title'] = get_article_settings(
+            session,
+            assignment['submission_id'],
+            'title'
+        )
     return review_assignments
 
 def get_uncompleted_reviews(session):
-    review_assignments = all_as_dict(session.query(ojs.ReviewAssignment).filter(ojs.ReviewAssignment.date_confirmed != None, ojs.ReviewAssignment.date_completed == None, ojs.ReviewAssignment.date_reminded == None, ojs.ReviewAssignment.declined == 0, ojs.ReviewAssignment.replaced == 0, ojs.ReviewAssignment.cancelled == 0).order_by(ojs.ReviewAssignment.date_due))
+    review_assignments = all_as_dict(
+        session.query(
+            ojs.ReviewAssignment
+        ).filter(
+            ojs.ReviewAssignment.date_confirmed != None,
+            ojs.ReviewAssignment.date_completed == None,
+            ojs.ReviewAssignment.date_reminded == None,
+            ojs.ReviewAssignment.declined == 0,
+            ojs.ReviewAssignment.replaced == 0,
+            ojs.ReviewAssignment.cancelled == 0
+        ).order_by(
+            ojs.ReviewAssignment.date_due
+        )
+    )
+
     for assignment in review_assignments:
-        assignment['reviewer_settings'] = get_user_settings_dict(session, assignment.get('reviewer').user_id)
-        assignment['article'] = get_article_by_id_preview(session, assignment['submission_id'])
-        assignment['title'] = get_article_settings(session, assignment['submission_id'], 'title')
+        assignment['reviewer_settings'] = get_user_settings_dict(
+            session,
+            assignment.get('reviewer').user_id
+        )
+        assignment['article'] = get_article_by_id_preview(
+            session,
+            assignment['submission_id']
+        )
+        assignment['title'] = get_article_settings(
+            session,
+            assignment['submission_id'],
+            'title'
+        )
     return review_assignments
 
 
