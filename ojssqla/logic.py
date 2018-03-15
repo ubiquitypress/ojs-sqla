@@ -1008,11 +1008,21 @@ def get_uncompleted_reviews(session):
         assignment['title'] = get_article_settings(session, assignment['submission_id'], 'title')
     return review_assignments
 
+
 def get_access_key(session, review_id):
+    """Return the earliest access key entry for the given review."""
     try:
-        return session.query(ojs.AccessKey).filter(context="ReviewContext", assoc_id=review_id).one()
+        return session.query(
+            ojs.AccessKey
+        ).filter(
+            ojs.AccessKey.context == 'ReviewerContext',
+            ojs.AccessKey.assoc_id == review_id
+        ).order_by(
+            'expiry_date desc'
+        ).first()
     except NoResultFound:
         return None
+
 
 def get_article_comments(session, article_id=None, date=None, article_ids=None, count=None):
 
@@ -1175,7 +1185,6 @@ def create_section(session, section_dict):
     new_section = ojs.Section(**section_dict)
     session.add(new_section)
     session.flush()
-    print new_section.section_id
     return new_section.section_id
 
 def add_section_settings(session, section_settings_dict, section_id):
@@ -1201,3 +1210,34 @@ def mark_reminder_sent(session, review_id, date_sent):
     setattr(assignment, 'date_reminded', date_sent)
     setattr(assignment, 'reminder_was_automatic', 1)
     session.flush()
+
+
+def add_access_key(session, review_id, new_key_hash):
+    """Add a new access key for an existing review.
+
+    Duplicates an existing access key for the review
+    and replaces the key hash with the given new one.
+
+    Args:
+        review_id: ID of the review assignment.
+        new_key_hash: MD5 hashed version of the new access key.
+
+    Returns:
+        The new access key object if successful, None if not.
+    """
+    try:
+        existing_access_key = get_access_key(session, review_id)
+        kwargs = {
+            'context': 'ReviewerContext',
+            'key_hash': new_key_hash,
+            'user_id': existing_access_key.user_id,
+            'assoc_id': existing_access_key.assoc_id,
+            'expiry_date': existing_access_key.expiry_date
+        }
+        new_access_key_entry = ojs.AccessKey(**kwargs)
+        session.add(new_access_key_entry)
+        session.flush()
+        return new_access_key_entry
+
+    except:
+        return None
