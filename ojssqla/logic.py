@@ -163,7 +163,7 @@ def assign_section_editor(session, article, submission_id, editor):
     assignment_dict = {
         'article_id': submission_id,
         'editor_id': editor.get('user_id'),
-        'can_edit':editor.get('can_edit'),
+        'can_edit': editor.get('can_edit'),
         'can_review': editor.get('can_review'),
         'date_assigned': date.today(),
         'date_notified': date.today(),
@@ -172,6 +172,7 @@ def assign_section_editor(session, article, submission_id, editor):
     session.add(assignment)
     session.commit()
     return 'assigned'
+
 
 def get_journal_editors(session):
     role_list = session.query(ojs.Roles).filter(ojs.Roles.role_id == 256)
@@ -216,7 +217,6 @@ def get_submission_checklist(session, locale):
 
 def get_article_list(session, filter_checks=None, order_by=None, articles_per_page=25, offset=0, taxonomy=0):
     order_list = []
-    print taxonomy
     if order_by == 'page_number':
         order_list.append(desc(ojs.Article.pages))
     elif order_by == 'section':
@@ -245,12 +245,33 @@ def get_article(session, doi):
         except NoResultFound:
             return None
 
-def get_article_by_id(session, doi):
+def get_article_by_id(session, id):
     try:
-        return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.Article.article_id == doi, ojs.Issue.date_published != None).one()
+        return session.query(
+            ojs.Article
+        ).join(
+            ojs.PublishedArticle
+        ).join(
+            ojs.Issue
+        ).filter(
+            ojs.Article.article_id == id,
+            ojs.Issue.date_published != None
+        ).one()
     except NoResultFound:
         try:
-            return session.query(ojs.Article).join(ojs.ArticleSetting).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.ArticleSetting.setting_name == 'pub-id::publisher-id', ojs.ArticleSetting.setting_value == doi, ojs.Issue.date_published != None).one()
+            return session.query(
+                ojs.Article
+            ).join(
+                ojs.ArticleSetting
+            ).join(
+                ojs.PublishedArticle
+            ).join(
+                ojs.Issue
+            ).filter(
+                ojs.ArticleSetting.setting_name == 'pub-id::publisher-id',
+                ojs.ArticleSetting.setting_value == id,
+                ojs.Issue.date_published != None
+            ).one()
         except NoResultFound:
             return None
 
@@ -1307,13 +1328,11 @@ def mark_reminder_sent(session, review_id, date_sent):
     session.flush()
 
 
-def add_access_key(session, review_id, new_key_hash):
+def add_access_key(session, reviewer_id, review_id, new_key_hash):
     """Add a new access key for an existing review.
 
-    Duplicates an existing access key for the review
-    and replaces the key hash with the given new one.
-
     Args:
+        reviewer_id: user ID of reviewer.
         review_id: ID of the review assignment.
         new_key_hash: MD5 hashed version of the new access key.
 
@@ -1321,15 +1340,13 @@ def add_access_key(session, review_id, new_key_hash):
         The new access key object if successful, None if not.
     """
     try:
-        existing_access_key = get_access_key(session, review_id)
-        kwargs = {
-            'context': 'ReviewerContext',
-            'key_hash': new_key_hash,
-            'user_id': existing_access_key.user_id,
-            'assoc_id': existing_access_key.assoc_id,
-            'expiry_date': existing_access_key.expiry_date
-        }
-        new_access_key_entry = ojs.AccessKey(**kwargs)
+        new_access_key_entry = ojs.AccessKey(
+            context='ReviewerContext',
+            key_hash=new_key_hash,
+            user_id=reviewer_id,
+            assoc_id=review_id,
+            expiry_date=datetime.datetime.now() + datetime.timedelta(weeks=12)
+        )
         session.add(new_access_key_entry)
         session.flush()
         return new_access_key_entry
