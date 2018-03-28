@@ -1345,7 +1345,7 @@ def add_access_key(session, reviewer_id, review_id, new_key_hash):
             key_hash=new_key_hash,
             user_id=reviewer_id,
             assoc_id=review_id,
-            expiry_date=datetime.datetime.now() + datetime.timedelta(weeks=12)
+            expiry_date=datetime.now() + timedelta(weeks=12)
         )
         session.add(new_access_key_entry)
         session.flush()
