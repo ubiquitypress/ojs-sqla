@@ -1331,25 +1331,21 @@ def mark_reminder_sent(session, review_id, date_sent):
 def add_access_key(session, reviewer_id, review_id, new_key_hash):
     """Add a new access key for an existing review.
 
-    Args:
+    Params:
         reviewer_id: user ID of reviewer.
         review_id: ID of the review assignment.
         new_key_hash: MD5 hashed version of the new access key.
 
     Returns:
-        The new access key object if successful, None if not.
+        The new access key object.
     """
-    try:
-        new_access_key_entry = ojs.AccessKey(
-            context='ReviewerContext',
-            key_hash=new_key_hash,
-            user_id=reviewer_id,
-            assoc_id=review_id,
-            expiry_date=datetime.now() + timedelta(weeks=12)
-        )
-        session.add(new_access_key_entry)
-        session.flush()
-        return new_access_key_entry
-
-    except:
-        return None
+    new_access_key_entry = ojs.AccessKey(
+        context='ReviewerContext',
+        key_hash=new_key_hash,
+        user_id=reviewer_id,
+        assoc_id=review_id,
+        expiry_date=datetime.now() + timedelta(weeks=12)
+    )
+    session.add(new_access_key_entry)
+    session.flush()
+    return new_access_key_entry
