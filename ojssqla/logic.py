@@ -163,7 +163,7 @@ def assign_section_editor(session, article, submission_id, editor):
     assignment_dict = {
         'article_id': submission_id,
         'editor_id': editor.get('user_id'),
-        'can_edit':editor.get('can_edit'),
+        'can_edit': editor.get('can_edit'),
         'can_review': editor.get('can_review'),
         'date_assigned': date.today(),
         'date_notified': date.today(),
@@ -172,6 +172,7 @@ def assign_section_editor(session, article, submission_id, editor):
     session.add(assignment)
     session.commit()
     return 'assigned'
+
 
 def get_journal_editors(session):
     role_list = session.query(ojs.Roles).filter(ojs.Roles.role_id == 256)
@@ -216,7 +217,6 @@ def get_submission_checklist(session, locale):
 
 def get_article_list(session, filter_checks=None, order_by=None, articles_per_page=25, offset=0, taxonomy=0):
     order_list = []
-    print taxonomy
     if order_by == 'page_number':
         order_list.append(desc(ojs.Article.pages))
     elif order_by == 'section':
@@ -245,23 +245,66 @@ def get_article(session, doi):
         except NoResultFound:
             return None
 
-def get_article_by_id(session, doi):
+def get_article_by_id(session, id):
     try:
-        return session.query(ojs.Article).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.Article.article_id == doi, ojs.Issue.date_published != None).one()
+        return session.query(
+            ojs.Article
+        ).join(
+            ojs.PublishedArticle
+        ).join(
+            ojs.Issue
+        ).filter(
+            ojs.Article.article_id == id,
+            ojs.Issue.date_published != None
+        ).one()
     except NoResultFound:
         try:
-            return session.query(ojs.Article).join(ojs.ArticleSetting).join(ojs.PublishedArticle).join(ojs.Issue).filter(ojs.ArticleSetting.setting_name == 'pub-id::publisher-id', ojs.ArticleSetting.setting_value == doi, ojs.Issue.date_published != None).one()
+            return session.query(
+                ojs.Article
+            ).join(
+                ojs.ArticleSetting
+            ).join(
+                ojs.PublishedArticle
+            ).join(
+                ojs.Issue
+            ).filter(
+                ojs.ArticleSetting.setting_name == 'pub-id::publisher-id',
+                ojs.ArticleSetting.setting_value == id,
+                ojs.Issue.date_published != None
+            ).one()
         except NoResultFound:
             return None
 
+
 def get_article_by_id_preview(session, id):
     try:
-        return session.query(ojs.Article).outerjoin(ojs.PublishedArticle).outerjoin(ojs.Issue).filter(ojs.Article.article_id == id).one()
+        return session.query(
+            ojs.Article
+        ).outerjoin(
+            ojs.PublishedArticle
+        ).outerjoin(
+            ojs.Issue
+        ).filter(
+            ojs.Article.article_id == id
+        ).one()
+
     except NoResultFound:
         try:
-            return session.query(ojs.Article).join(ojs.ArticleSetting).outerjoin(ojs.PublishedArticle).outerjoin(ojs.Issue).filter(ojs.ArticleSetting.setting_name == 'pub-id::publisher-id', ojs.ArticleSetting.setting_value == doi).one()
+            return session.query(
+                ojs.Article
+            ).join(
+                ojs.ArticleSetting
+            ).outerjoin(
+                ojs.PublishedArticle
+            ).outerjoin(
+                ojs.Issue
+            ).filter(
+                ojs.ArticleSetting.setting_name == 'pub-id::publisher-id',
+                ojs.ArticleSetting.setting_value == id
+            ).one()
         except NoResultFound:
             return None
+
 
 def get_article_by_pubid(session, pubid):
     try:
@@ -984,35 +1027,118 @@ def get_review_details(session, article_id):
 
     return review_assignments
 
+
 def get_uncomplete_review_details(session):
-    review_assignments = all_as_dict(session.query(ojs.ReviewAssignment).filter(ojs.ReviewAssignment.date_completed == None, ojs.ReviewAssignment.date_reminded == None, ojs.ReviewAssignment.declined == 0, ojs.ReviewAssignment.replaced == 0, ojs.ReviewAssignment.cancelled == 0).order_by(ojs.ReviewAssignment.date_due))
+    review_assignments = all_as_dict(
+        session.query(
+            ojs.ReviewAssignment
+        ).filter(
+            ojs.ReviewAssignment.date_completed == None,
+            ojs.ReviewAssignment.date_reminded == None,
+            ojs.ReviewAssignment.declined == 0,
+            ojs.ReviewAssignment.replaced == 0,
+            ojs.ReviewAssignment.cancelled == 0
+        ).order_by(
+            ojs.ReviewAssignment.date_due
+        )
+    )
+
     for assignment in review_assignments:
-        assignment['reviewer_settings'] = get_user_settings_dict(session, assignment.get('reviewer').user_id)
-        assignment['article'] = get_article_by_id_preview(session, assignment['submission_id'])
-        assignment['title'] = get_article_settings(session, assignment['submission_id'], 'title')
+        assignment['reviewer_settings'] = get_user_settings_dict(
+            session,
+            assignment.get('reviewer').user_id
+        )
+        assignment['article'] = get_article_by_id_preview(
+            session,
+            assignment['submission_id']
+        )
+        assignment['title'] = get_article_settings(
+            session,
+            assignment['submission_id'],
+            'title'
+        )
     return review_assignments
 
+
 def get_unconfirmed_reviews(session):
-    review_assignments = all_as_dict(session.query(ojs.ReviewAssignment).filter(ojs.ReviewAssignment.date_confirmed == None, ojs.ReviewAssignment.date_completed == None, ojs.ReviewAssignment.date_reminded == None, ojs.ReviewAssignment.declined == 0, ojs.ReviewAssignment.replaced == 0, ojs.ReviewAssignment.cancelled == 0).order_by(ojs.ReviewAssignment.date_due))
+    review_assignments = all_as_dict(
+        session.query(
+            ojs.ReviewAssignment
+        ).filter(
+            ojs.ReviewAssignment.date_confirmed == None,
+            ojs.ReviewAssignment.date_completed == None,
+            ojs.ReviewAssignment.date_reminded == None,
+            ojs.ReviewAssignment.declined == 0,
+            ojs.ReviewAssignment.replaced == 0,
+            ojs.ReviewAssignment.cancelled == 0
+        ).order_by(
+            ojs.ReviewAssignment.date_due
+        )
+    )
+
     for assignment in review_assignments:
-        assignment['reviewer_settings'] = get_user_settings_dict(session, assignment.get('reviewer').user_id)
-        assignment['article'] = get_article_by_id_preview(session, assignment['submission_id'])
-        assignment['title'] = get_article_settings(session, assignment['submission_id'], 'title')
+        assignment['reviewer_settings'] = get_user_settings_dict(
+            session,
+            assignment.get('reviewer').user_id
+        )
+        assignment['article'] = get_article_by_id_preview(
+            session,
+            assignment['submission_id']
+        )
+        assignment['title'] = get_article_settings(
+            session,
+            assignment['submission_id'],
+            'title'
+        )
     return review_assignments
 
 def get_uncompleted_reviews(session):
-    review_assignments = all_as_dict(session.query(ojs.ReviewAssignment).filter(ojs.ReviewAssignment.date_confirmed != None, ojs.ReviewAssignment.date_completed == None, ojs.ReviewAssignment.date_reminded == None, ojs.ReviewAssignment.declined == 0, ojs.ReviewAssignment.replaced == 0, ojs.ReviewAssignment.cancelled == 0).order_by(ojs.ReviewAssignment.date_due))
+    review_assignments = all_as_dict(
+        session.query(
+            ojs.ReviewAssignment
+        ).filter(
+            ojs.ReviewAssignment.date_confirmed != None,
+            ojs.ReviewAssignment.date_completed == None,
+            ojs.ReviewAssignment.date_reminded == None,
+            ojs.ReviewAssignment.declined == 0,
+            ojs.ReviewAssignment.replaced == 0,
+            ojs.ReviewAssignment.cancelled == 0
+        ).order_by(
+            ojs.ReviewAssignment.date_due
+        )
+    )
+
     for assignment in review_assignments:
-        assignment['reviewer_settings'] = get_user_settings_dict(session, assignment.get('reviewer').user_id)
-        assignment['article'] = get_article_by_id_preview(session, assignment['submission_id'])
-        assignment['title'] = get_article_settings(session, assignment['submission_id'], 'title')
+        assignment['reviewer_settings'] = get_user_settings_dict(
+            session,
+            assignment.get('reviewer').user_id
+        )
+        assignment['article'] = get_article_by_id_preview(
+            session,
+            assignment['submission_id']
+        )
+        assignment['title'] = get_article_settings(
+            session,
+            assignment['submission_id'],
+            'title'
+        )
     return review_assignments
 
+
 def get_access_key(session, review_id):
+    """Return the earliest access key entry for the given review."""
     try:
-        return session.query(ojs.AccessKey).filter(context="ReviewContext", assoc_id=review_id).one()
+        return session.query(
+            ojs.AccessKey
+        ).filter(
+            ojs.AccessKey.context == 'ReviewerContext',
+            ojs.AccessKey.assoc_id == review_id
+        ).order_by(
+            'expiry_date desc'
+        ).first()
     except NoResultFound:
         return None
+
 
 def get_article_comments(session, article_id=None, date=None, article_ids=None, count=None):
 
@@ -1175,7 +1301,6 @@ def create_section(session, section_dict):
     new_section = ojs.Section(**section_dict)
     session.add(new_section)
     session.flush()
-    print new_section.section_id
     return new_section.section_id
 
 def add_section_settings(session, section_settings_dict, section_id):
@@ -1201,3 +1326,26 @@ def mark_reminder_sent(session, review_id, date_sent):
     setattr(assignment, 'date_reminded', date_sent)
     setattr(assignment, 'reminder_was_automatic', 1)
     session.flush()
+
+
+def add_access_key(session, reviewer_id, review_id, new_key_hash):
+    """Add a new access key for an existing review.
+
+    Params:
+        reviewer_id: user ID of reviewer.
+        review_id: ID of the review assignment.
+        new_key_hash: MD5 hashed version of the new access key.
+
+    Returns:
+        The new access key object.
+    """
+    new_access_key_entry = ojs.AccessKey(
+        context='ReviewerContext',
+        key_hash=new_key_hash,
+        user_id=reviewer_id,
+        assoc_id=review_id,
+        expiry_date=datetime.now() + timedelta(weeks=12)
+    )
+    session.add(new_access_key_entry)
+    session.flush()
+    return new_access_key_entry
