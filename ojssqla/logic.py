@@ -1028,13 +1028,14 @@ def get_review_details(session, article_id):
     return review_assignments
 
 
-def get_uncomplete_review_details(session):
+def get_incomplete_review_details(session):
     review_assignments = all_as_dict(
         session.query(
             ojs.ReviewAssignment
         ).filter(
             ojs.ReviewAssignment.date_completed == None,
             ojs.ReviewAssignment.date_reminded == None,
+            ojs.ReviewAssignment.date_notified != None,
             ojs.ReviewAssignment.declined == 0,
             ojs.ReviewAssignment.replaced == 0,
             ojs.ReviewAssignment.cancelled == 0
