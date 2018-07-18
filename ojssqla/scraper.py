@@ -153,20 +153,52 @@ def get_articles(session):
 
 	return articles
 
+
 def get_modified_articles(session):
 
-	date = deltadate(28)
-	articles = all_as_dict(session.query(ojs.Article).outerjoin(ojs.PublishedArticle).join(ojs.Section).filter((ojs.Article.date_submitted >= date) | (ojs.Article.last_modified >= date) | (ojs.PublishedArticle.date_published >= date)))
+    date = deltadate(28)
+    articles = all_as_dict(
+        session.query(
+            ojs.Article
+        ).outerjoin(
+            ojs.PublishedArticle
+        ).join(
+            ojs.Section
+        ).filter(
+            (ojs.Article.date_submitted >= date) |
+            (ojs.Article.last_modified >= date) |
+            (ojs.PublishedArticle.date_published >= date)
+        )
+    )
 
-	for article in articles:
-		article['events'] = get_article_events(session, article['article_id'])
-		article['settings'] = get_article_settings(session, article['article_id'])
-		article['published_article'] = get_published_article(session, article['article_id'])
-		article['latest_rejected_decission'] = get_editor_decissions(session, article['article_id'], 4)
-		article['latest_accepted_decission'] = get_editor_decissions(session, article['article_id'], 1)
-		article['authors'] = get_author_settings(session, article['authors'])
+    for article in articles:
+        article['events'] = get_article_events(
+            session, article['article_id']
+        )
+        article['settings'] = get_article_settings(
+            session,
+            article['article_id']
+        )
+        article['published_article'] = get_published_article(
+            session,
+            article['article_id']
+        )
+        article['latest_rejected_decission'] = get_editor_decissions(
+            session,
+            article['article_id'],
+            4
+        )
+        article['latest_accepted_decission'] = get_editor_decissions(
+            session,
+            article['article_id'],
+            1
+        )
+        article['authors'] = get_author_settings(
+            session,
+            article['authors']
+        )
 
-	return articles
+    return articles
 
 def get_article_settings(session, article_id):
 	return dict_ojs_settings_results(session.query(ojs.ArticleSetting).filter(ojs.ArticleSetting.article_id == article_id))

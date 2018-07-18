@@ -602,6 +602,7 @@ class Licenses(Base):
     id = Column(BigInteger, primary_key=True)
     name = Column(String(200))
     pretty_name = Column(String(200))
+    description = Column(String(200))
     enabled = Column(SmallInteger)
 
 
