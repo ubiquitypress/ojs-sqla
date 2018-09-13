@@ -1061,7 +1061,8 @@ def get_incomplete_review_details(session):
             ojs.ReviewAssignment.date_notified != None,
             ojs.ReviewAssignment.declined == 0,
             ojs.ReviewAssignment.replaced == 0,
-            ojs.ReviewAssignment.cancelled == 0
+            ojs.ReviewAssignment.cancelled == 0,
+            ojs.ReviewAssignment.reviewer_id == ojs.User.user_id
         ).order_by(
             ojs.ReviewAssignment.date_due
         )
